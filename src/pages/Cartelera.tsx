@@ -110,8 +110,22 @@ export default function Cartelera() {
         const res = await fetch("/api/talks");
         const data: Talk[] = await res.json();
         
-        const scheduled = data.filter(t => t.status === "scheduled" && t.scheduled_date);
-        const completed = data.filter(t => t.status === "completed");
+        const now = new Date().getTime();
+
+        const scheduled = data.filter(t => 
+          t.status === "scheduled" && 
+          t.scheduled_date && 
+          new Date(t.scheduled_date).getTime() >= now
+        );
+        
+        const pastFromDate = data.filter(t => 
+          t.status === "scheduled" && 
+          t.scheduled_date && 
+          new Date(t.scheduled_date).getTime() < now
+        );
+        
+        const officiallyCompleted = data.filter(t => t.status === "completed");
+        const completed = [...pastFromDate, ...officiallyCompleted];
         
         // Sort upcoming by date ascending
         scheduled.sort((a, b) => new Date(a.scheduled_date!).getTime() - new Date(b.scheduled_date!).getTime());
