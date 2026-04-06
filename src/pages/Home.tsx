@@ -24,7 +24,13 @@ export default function Home() {
     fetch("/api/talks")
       .then(r => r.json())
       .then(data => {
-        const scheduled = data.filter((t: any) => t.status === "scheduled" && t.scheduled_date)
+        const now = new Date().getTime();
+        const scheduled = data
+          .filter((t: any) =>
+            t.status === "scheduled" &&
+            t.scheduled_date &&
+            new Date(t.scheduled_date).getTime() >= now
+          )
           .sort((a: any, b: any) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
         if (scheduled.length > 0) setNextTalk(scheduled[0]);
       })
