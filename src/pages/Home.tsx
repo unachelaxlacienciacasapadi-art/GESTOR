@@ -87,9 +87,9 @@ export default function Home() {
             {/* Glow effect */}
             <div className="absolute -inset-2 bg-gradient-to-r from-[#FF3366] via-[#FFCC00] to-[#00FFCC] rounded-full blur-lg opacity-60 group-hover:opacity-100 transition duration-500"></div>
             {/* White circular container */}
-            <div className="w-24 h-24 mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] rounded-full flex items-center justify-center p-2 relative">
-              <div className="absolute inset-0 rounded-full border border-white/10" />
-              <img src={logoImg} alt="Una chela por la ciencia" className="max-w-full max-h-full object-contain filter hue-rotate-15 contrast-125 brightness-110 drop-shadow-2xl" />
+            <div className="w-32 h-32 md:w-48 md:h-48 mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] rounded-full flex items-center justify-center p-3 relative bg-black/20 backdrop-blur-sm">
+              <div className="absolute inset-0 rounded-full border border-white/20" />
+              <img src={logoImg} alt="Una chela por la ciencia" className="w-[85%] h-[85%] object-contain filter hue-rotate-15 contrast-125 brightness-110 drop-shadow-2xl" />
             </div>
           </div>
         </div>
