@@ -344,7 +344,7 @@ export default function Admin() {
 
   // Filter talks based on active tab
   const filteredTalks = talks.filter(talk => {
-    if (activeTab === "list") return talk.status === "pending" || talk.status === "rejected";
+    if (activeTab === "list") return talk.status === "pending" || talk.status === "rejected" || talk.status === "approved";
     if (activeTab === "calendar") return talk.status === "approved" || talk.status === "scheduled";
     if (activeTab === "design") return talk.status === "scheduled" || talk.status === "completed";
     if (activeTab === "dashboard" || activeTab === "agenda" || activeTab === "contacts") return false;
@@ -808,38 +808,6 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-              ) : activeTab === "calendar" ? (
-                <div className="space-y-6">
-                  <div className="border-b border-[#333333] pb-4">
-                    <h2 className="text-xl font-serif font-bold text-white flex items-center gap-2">
-                      <CalendarIcon className="w-5 h-5 text-[#00FFCC]" />
-                      Agendar Charla
-                    </h2>
-                    <p className="text-[#A0A0A0] text-sm mt-1">Selecciona una fecha para "{selectedTalk.title}"</p>
-                  </div>
-                  
-                  <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333]">
-                    <div className="space-y-3">
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                        Fecha Programada
-                      </label>
-                      <input
-                        type="datetime-local"
-                        className="w-full px-4 py-2.5 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white text-sm"
-                        value={selectedTalk.scheduled_date ? selectedTalk.scheduled_date.slice(0, 16) : ""}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            const isoDate = new Date(e.target.value).toISOString();
-                            updateStatus(selectedTalk.id, "scheduled", isoDate);
-                          }
-                        }}
-                      />
-                      <p className="text-xs text-[#00FFCC]/80 italic mt-2">
-                        Al seleccionar una fecha, el estado cambiará automáticamente a "Agendada".
-                      </p>
-                    </div>
-                  </div>
-                </div>
               ) : (
                 <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#333333] pb-5 gap-4">
@@ -989,6 +957,31 @@ export default function Admin() {
                           </div>
                         </div>
                       )}
+                      {selectedTalk.status === "approved" && (
+                        <div>
+                          <h3 className="text-xs font-bold text-[#00FFCC] uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-[#00FFCC]" />
+                            Agendar Propuesta
+                          </h3>
+                          <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#00FFCC]/50 shadow-[0_0_15px_rgba(0,255,204,0.1)]">
+                            <p className="text-sm text-[#E0E0E0] mb-4">Esta propuesta está aprobada. Selecciona una fecha y hora para agendarla oficialmente.</p>
+                            <input
+                              type="datetime-local"
+                              className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white text-sm"
+                              value={selectedTalk.scheduled_date ? selectedTalk.scheduled_date.slice(0, 16) : ""}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  const isoDate = new Date(e.target.value).toISOString();
+                                  updateStatus(selectedTalk.id, "scheduled", isoDate);
+                                }
+                              }}
+                            />
+                            <p className="text-xs text-[#A0A0A0] mt-3 italic">
+                              Al asignar la fecha, la charla se moverá a la categoría "Agendadas" en la sección de Diseño, y será visible en la Cartelera para el público.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Resumen (Abstract)</h3>
                         <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] text-[#E0E0E0] text-sm leading-relaxed">
@@ -1121,23 +1114,23 @@ export default function Admin() {
               )}
             </div>
           ) : (
-            <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] h-[calc(100vh-180px)] flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#9933FF] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
-              <div className="w-16 h-16 bg-[#0A0A0A] border border-[#333333] rounded-full flex items-center justify-center text-[#9933FF] mb-5 relative z-10">
-                {activeTab === "list" && <Coffee className="w-8 h-8" />}
-                {activeTab === "calendar" && <CalendarIcon className="w-8 h-8" />}
-                {activeTab === "design" && <ImageIcon className="w-8 h-8" />}
+              <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] h-[calc(100vh-180px)] flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#9933FF] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
+                <div className="w-16 h-16 bg-[#0A0A0A] border border-[#333333] rounded-full flex items-center justify-center text-[#9933FF] mb-5 relative z-10">
+                  {activeTab === "list" && <Coffee className="w-8 h-8" />}
+                  {activeTab === "agenda" && <CalendarIcon className="w-8 h-8" />}
+                  {activeTab === "design" && <ImageIcon className="w-8 h-8" />}
+                </div>
+                <h2 className="text-xl font-serif font-bold text-white mb-2 relative z-10">{getPlaceholderTitle()}</h2>
+                <p className="text-[#A0A0A0] text-sm max-w-sm relative z-10">
+                  {getPlaceholderText()}
+                </p>
               </div>
-              <h2 className="text-xl font-serif font-bold text-white mb-2 relative z-10">{getPlaceholderTitle()}</h2>
-              <p className="text-[#A0A0A0] text-sm max-w-sm relative z-10">
-                {getPlaceholderText()}
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </>
-        )}
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 }
