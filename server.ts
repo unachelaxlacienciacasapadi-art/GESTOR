@@ -108,8 +108,22 @@ const initDb = async () => {
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      -- Sync sequences robustly
+      DO $$ 
+      DECLARE 
+        r RECORD;
+      BEGIN
+        FOR r IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE') LOOP
+          BEGIN
+            EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''id''), COALESCE(MAX(id), 0) + 1, false) FROM ' || r.table_name;
+          EXCEPTION WHEN OTHERS THEN
+            -- Skip tables without an 'id' serial column
+          END;
+        END LOOP;
+      END $$;
     `);
-    console.log("Database initialized successfully!");
+    console.log("Database initialized and sequences synchronized!");
   } catch (error) {
     console.error("Failed to initialize database schema:", error);
   }
@@ -255,11 +269,13 @@ app.get("/api/talks", async (req, res) => {
 
 app.post("/api/talks", upload.single("photo"), async (req, res) => {
   try {
+    console.log("POST /api/talks - Recibiendo propuesta...");
     const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs } = req.body;
     
     // Convert to Base64 data URL if we received a file via multer memoryStorage
     let photoUrl = null;
     if (req.file) {
+      console.log(`Procesando foto: ${req.file.size} bytes`);
       const base64 = req.file.buffer.toString("base64");
       photoUrl = `data:${req.file.mimetype};base64,${base64}`;
     }
@@ -271,10 +287,11 @@ app.post("/api/talks", upload.single("photo"), async (req, res) => {
       title || "", abstract || "", speaker_name || "", speaker_bio || "", photoUrl, email || "", phone || "", social_media || null, technical_needs || null
     ]);
 
+    console.log(`Propuesta guardada con éxito. Folio: #${rows[0].id}`);
     res.status(201).json({ id: rows[0].id, message: "Talk submitted successfully" });
-  } catch (err) {
-    console.error("Talk insert err:", err);
-    res.status(500).json({ error: "Failed to submit talk" });
+  } catch (err: any) {
+    console.error("Error en POST /api/talks:", err);
+    res.status(500).json({ error: "Failed to submit talk", details: err.message });
   }
 });
 
@@ -410,7 +427,7 @@ async function startServer() {
     app.use(express.static("dist"));
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Upload, Send, CheckCircle2, AlertCircle, FileDown, Printer, Share2, Download } from "lucide-react";
+import { Upload, Send, CheckCircle2, AlertCircle, FileDown, Printer, Share2, Download, Phone } from "lucide-react";
 import { cn } from "../lib/utils";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
@@ -10,6 +10,43 @@ export default function Registro() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [folioId, setFolioId] = useState<number | null>(null);
 
+  const compressImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("Could not get canvas context");
+        
+        let width = img.width;
+        let height = img.height;
+        const maxSize = 1000;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height *= maxSize / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width *= maxSize / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject("Compression failed");
+        }, "image/jpeg", 0.7);
+      };
+      img.onerror = reject;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -17,6 +54,16 @@ export default function Registro() {
     setSubmitStatus("idle");
 
     const formData = new FormData(form);
+    const photoFile = formData.get("photo") as File;
+
+    if (photoFile && photoFile.size > 0) {
+      try {
+        const compressedBlob = await compressImage(photoFile);
+        formData.set("photo", compressedBlob, "photo.jpg");
+      } catch (err) {
+        console.warn("Compression failed, sending original", err);
+      }
+    }
 
     try {
       const res = await fetch("/api/talks", {
@@ -64,7 +111,7 @@ export default function Registro() {
         pixelRatio: 2,
       });
       const link = document.createElement("a");
-      link.download = `Guia_Ponentes_Folio_${folioId || '000'}.png`;
+      link.download = `Registro_CasaPadi_Folio_${folioId || '000'}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -72,13 +119,10 @@ export default function Registro() {
     }
   };
 
-  const printGuide = () => {
-    window.print();
-  };
-
   const shareWhatsApp = () => {
-    const text = `¡Hola! He registrado mi propuesta de charla en Casa Padi. Mi folio de registro es: #${String(folioId).padStart(4, '0')}. ¡Nos vemos pronto para compartir ciencia y una buena chela!`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const phone = "7717741409";
+    const text = `¡Hola Casa Pädi! 🎉 Acabo de registrar mi propuesta de charla con el Folio: #${String(folioId).padStart(4, '0')}. ¡Quedo atento a su contacto! 👋`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
 
@@ -95,103 +139,127 @@ export default function Registro() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFCC00] rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none" />
         
         {submitStatus === "success" && (
-          <div className="mb-8 flex flex-col items-center space-y-6 relative z-10">
-            <div className="flex items-center gap-3 text-[#00FFCC] no-print">
-              <CheckCircle2 className="w-8 h-8" />
-              <h3 className="text-2xl font-serif font-bold text-white">¡Propuesta enviada con éxito!</h3>
+          <div className="mb-8 flex flex-col items-center space-y-8 relative z-10">
+            <div className="flex flex-col items-center text-center space-y-4 no-print">
+              <div className="w-16 h-16 bg-[#00FFCC]/20 rounded-full flex items-center justify-center border border-[#00FFCC]/30 animate-pulse">
+                <CheckCircle2 className="w-8 h-8 text-[#00FFCC]" />
+              </div>
+              <h3 className="text-3xl font-serif font-bold text-white">¡Gracias por participar!</h3>
+              <p className="text-[#A0A0A0] max-w-sm">
+                Hemos recibido tu propuesta. Nuestro equipo la revisará y te contactará en los próximos días.
+              </p>
+            </div>
+
+            {/* Next Steps Timeline */}
+            <div className="w-full max-w-md bg-[#0A0A0A] border border-[#222222] rounded-2xl p-6 space-y-6 no-print">
+              <h4 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-widest text-center mb-2">¿Qué sigue ahora?</h4>
+              
+              <div className="space-y-6 relative">
+                <div className="absolute left-3 top-2 bottom-2 w-px bg-gradient-to-b from-[#00FFCC] via-[#333333] to-[#333333]" />
+                
+                <div className="flex gap-4 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#00FFCC] flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(0,255,204,0.5)]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Envío recibido</p>
+                    <p className="text-xs text-[#A0A0A0]">Tu folio #${String(folioId).padStart(4, '0')} ya está en nuestra base de datos.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#333333] border border-[#444444] flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-[#FFCC00] animate-ping" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Revisión en proceso</p>
+                    <p className="text-xs text-[#A0A0A0]">Revisaremos los detalles (1-3 días hábiles).</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#333333] border border-[#444444] flex items-center justify-center shrink-0">
+                    <Phone className="w-3 h-3 text-[#A0A0A0]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Confirmación por WhatsApp/Correo</p>
+                    <p className="text-xs text-[#A0A0A0]">Te avisaremos para definir la fecha de tu charla.</p>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <p className="text-[#A0A0A0] text-center max-w-md no-print">
-              Hemos recibido tu propuesta. A continuación, te presentamos la guía para ponentes. Puedes guardarla o compartirla.
-            </p>
-
             {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-3 w-full max-w-md no-print">
-              <button
-                onClick={downloadImage}
-                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0A0A0A] text-white border border-[#333333] rounded-xl hover:bg-[#1A1A1A] hover:border-[#00FFCC] transition-all text-sm font-medium group"
-              >
-                <Download className="w-4 h-4 text-[#00FFCC] group-hover:scale-110 transition-transform" />
-                Descargar
-              </button>
-              <button
-                onClick={printGuide}
-                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0A0A0A] text-white border border-[#333333] rounded-xl hover:bg-[#1A1A1A] hover:border-[#FF3366] transition-all text-sm font-medium group"
-              >
-                <Printer className="w-4 h-4 text-[#FF3366] group-hover:scale-110 transition-transform" />
-                Imprimir
-              </button>
+            <div className="flex flex-wrap justify-center gap-4 w-full max-w-md no-print">
               <button
                 onClick={shareWhatsApp}
-                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-2.5 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/30 rounded-xl hover:bg-[#25D366]/20 transition-all text-sm font-medium group"
+                className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 bg-[#25D366] text-black rounded-full hover:bg-[#20bd5b] transition-all font-bold shadow-[0_4px_15px_rgba(37,211,102,0.3)]"
               >
-                <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                WhatsApp
+                <Share2 className="w-4 h-4" />
+                Confirmar vía WhatsApp
+              </button>
+              <button
+                onClick={downloadImage}
+                className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 bg-white/5 text-white border border-white/10 rounded-full hover:bg-white/10 transition-all font-medium"
+              >
+                <Download className="w-4 h-4 text-[#00FFCC]" />
+                Guardar Folio (Imagen)
               </button>
             </div>
 
-            {/* Beautiful Guide Preview */}
-            <div className="w-full max-w-2xl mt-4 overflow-hidden rounded-2xl border border-[#333333] shadow-2xl bg-[#0A0A0A] print-area">
-              <div ref={guideRef} className="p-8 md:p-12 bg-[#0A0A0A] relative" style={{ backgroundColor: '#0A0A0A' }}>
-                {/* Decorative background elements */}
+            {/* Guide Preview (What goes in the image) */}
+            <div className="w-full max-w-2xl mt-8 overflow-hidden rounded-2xl border border-[#333333] shadow-2xl bg-[#0A0A0A] print-area">
+              <div ref={guideRef} className="p-10 bg-[#0A0A0A] relative" style={{ backgroundColor: '#0A0A0A' }}>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#00FFCC] rounded-full mix-blend-screen filter blur-[120px] opacity-10" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FF3366] rounded-full mix-blend-screen filter blur-[120px] opacity-10" />
                 
                 <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-8 border-b border-[#333333] pb-6">
+                  <div className="flex justify-between items-center mb-10 border-b border-[#222222] pb-6">
                     <div>
-                      <h2 className="text-3xl font-serif font-bold text-white mb-2">Casa Padi</h2>
-                      <p className="text-[#00FFCC] font-medium tracking-wide uppercase text-sm">Una chela por la ciencia</p>
+                      <h2 className="text-3xl font-serif font-bold text-white mb-2">Casa Pädi</h2>
+                      <p className="text-[#00FFCC] font-medium tracking-[0.2em] uppercase text-xs">Una chela por la ciencia</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-[#A0A0A0] uppercase tracking-wider mb-1">Folio de Registro</p>
-                      <p className="text-2xl font-mono font-bold text-[#FF3366]">
+                    <div className="bg-[#141414] border border-[#222222] p-4 py-3 rounded-xl text-center min-w-[120px]">
+                      <p className="text-[10px] text-[#A0A0A0] uppercase tracking-widest mb-1">Folio</p>
+                      <p className="text-2xl font-mono font-bold text-[#FFCC00]">
                         #{String(folioId || '0').padStart(4, '0')}
                       </p>
                     </div>
                   </div>
 
-                  <h1 className="text-2xl font-bold text-white mb-6">Guía para Ponentes</h1>
-                  
-                  <div className="space-y-6 text-[#D0D0D0] text-sm md:text-base leading-relaxed">
-                    <p className="text-lg font-medium text-white">
-                      ¡Felicidades por animarte a compartir tu conocimiento!
-                    </p>
-
-                    <div className="bg-[#141414] p-5 rounded-xl border border-[#333333]">
-                      <h3 className="text-[#00FFCC] font-bold mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
-                        Recomendaciones para tu charla
-                      </h3>
-                      <ul className="space-y-2 ml-4 list-disc marker:text-[#333333]">
-                        <li>Mantén un lenguaje accesible. Recuerda que el público no siempre es experto.</li>
-                        <li>Usa analogías y ejemplos de la vida diaria.</li>
-                        <li>La duración ideal es de 20 a 30 minutos, dejando tiempo para preguntas.</li>
-                        <li>Si usas presentación, prioriza imágenes sobre texto.</li>
-                      </ul>
+                  <div className="space-y-8">
+                    <div>
+                      <h4 className="text-xs uppercase tracking-widest text-[#A0A0A0] mb-4">Guía para el Ponente</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-[#141414]/50 p-5 rounded-2xl border border-[#222222]">
+                          <p className="text-[#FF3366] font-bold text-sm mb-3">Siguientes Pasos</p>
+                          <ul className="text-xs space-y-3 text-[#A0A0A0]">
+                            <li className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] mt-1 shrink-0" />
+                              Espera nuestra llamada o mensaje en un lapso de 1 a 3 días.
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] mt-1 shrink-0" />
+                              Ten lista una presentación (PDF o PPT) de unos 20-30 min.
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="bg-[#141414]/50 p-5 rounded-2xl border border-[#222222]">
+                          <p className="text-[#00FFCC] font-bold text-sm mb-3">Recomendaciones</p>
+                          <ul className="text-xs space-y-3 text-[#A0A0A0]">
+                            <li className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#00FFCC] mt-1 shrink-0" />
+                              Mantén el lenguaje accesible y divertido.
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#00FFCC] mt-1 shrink-0" />
+                              Usa analogías y ejemplos de la vida diaria.
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="bg-[#141414] p-5 rounded-xl border border-[#333333]">
-                      <h3 className="text-[#FF3366] font-bold mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#FF3366]" />
-                        Equipo disponible en Casa Padi
-                      </h3>
-                      <ul className="space-y-2 ml-4 list-disc marker:text-[#333333]">
-                        <li>Proyector HD con conexión HDMI</li>
-                        <li>Sistema de audio con micrófono inalámbrico</li>
-                        <li>Computadora (Windows) con Office y lector de PDF</li>
-                        <li>Puedes traer tu propia laptop si lo prefieres.</li>
-                      </ul>
-                    </div>
-
-                    <div className="pt-4 border-t border-[#333333]">
-                      <h3 className="text-white font-bold mb-2">Siguientes pasos:</h3>
-                      <p>
-                        Revisaremos tu propuesta y nos pondremos en contacto contigo vía correo o WhatsApp para confirmar la fecha y afinar detalles.
-                      </p>
-                    </div>
-
-                    <p className="text-center font-serif text-lg text-[#00FFCC] pt-4 italic">
+                    <p className="text-center font-serif text-xl text-white pt-6 border-t border-[#222222] italic">
                       "¡Nos vemos pronto para compartir ciencia y una buena chela!"
                     </p>
                   </div>

@@ -66,7 +66,20 @@ pool.query(`
     phone TEXT, social_media TEXT, notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
-`).catch(console.error);
+    -- Sync sequences robustly
+    DO $$ 
+    DECLARE 
+      r RECORD;
+    BEGIN
+      FOR r IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE') LOOP
+        BEGIN
+          EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || r.table_name || ''', ''id''), COALESCE(MAX(id), 0) + 1, false) FROM ' || r.table_name;
+        EXCEPTION WHEN OTHERS THEN
+          -- Skip tables without an 'id' serial column
+        END;
+      END LOOP;
+    END $$;
+  `).catch(console.error);
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -169,17 +182,23 @@ app.get("/api/talks", async (_req, res) => {
 
 app.post("/api/talks", upload.single("photo"), async (req, res) => {
   try {
+    console.log("POST /api/talks - Recibiendo propuesta...");
     const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs } = req.body;
     let photoUrl = null;
     if (req.file) {
+      console.log(`Procesando foto: ${req.file.size} bytes`);
       photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     }
     const { rows } = await pool.query(
       `INSERT INTO talks (title, abstract, speaker_name, speaker_bio, speaker_photo_url, email, phone, social_media, technical_needs) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
       [title || "", abstract || "", speaker_name || "", speaker_bio || "", photoUrl, email || "", phone || "", social_media || null, technical_needs || null]
     );
+    console.log(`Propuesta guardada con éxito. Folio: #${rows[0].id}`);
     res.status(201).json({ id: rows[0].id, message: "Talk submitted successfully" });
-  } catch (err) { console.error(err); res.status(500).json({ error: "Failed to submit talk" }); }
+  } catch (err) { 
+    console.error("Error en POST /api/talks:", err); 
+    res.status(500).json({ error: "Failed to submit talk" }); 
+  }
 });
 
 app.patch("/api/talks/:id", authenticateToken, async (req, res) => {
