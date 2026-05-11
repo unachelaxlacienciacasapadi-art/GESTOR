@@ -99,10 +99,15 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 - Validaciones funcionando correctamente
 - Tests: ✅ Endpoint devuelve fechas en formato ISO 8601
 
-**Nota técnica:** El campo `formatted` devuelve días en inglés porque usa locale default de date-fns-tz. En Fase 2, el frontend formateará las fechas en español con `Intl.DateTimeFormat` o importando locale `es` de date-fns.
+**✅ FASE 2 - Frontend Registro (Completada 2026-05-11)**
+- Selector de 2 fechas (1ª y 2ª opción) implementado en `Registro.tsx`.
+- Fetch de fechas disponibles al cargar el componente.
+- Formateo en español usando `Intl.DateTimeFormat`.
+- Validaciones: fechas diferentes y orden cronológico.
 
-**⏳ FASE 2 - Frontend Registro (Próxima)**
-**⏳ FASE 3 - Admin Panel (Pendiente)**
+**⏳ FASE 3 - Admin Panel (Próxima)**
+- Gestionar disponibilidad y excepciones desde el panel de administración.
+
 
 ---
 
@@ -112,11 +117,12 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente de validación manual en el dashboard.
 3.  🔄 **Feature: Sistema de fechas disponibles** (EN DESARROLLO)
     - ✅ Fase 1: Backend + Base de Datos ← COMPLETADA 2026-05-11
-    - ⏳ Fase 2: Frontend Registro (selector de 2 fechas)
+    - ✅ Fase 2: Frontend Registro (selector de 2 fechas) ← COMPLETADA 2026-05-11
     - ⏳ Fase 3: Admin Panel (gestionar disponibilidad)
 4.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
 5.  **Cartelera pública:** ✅ Funcional y desplegada.
 6.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
+7.  **Sistema de Fechas Disponibles (Fase 2):** ✅ Frontend implementado. Pendiente: Fase 3 (Admin Panel).
 
 ---
 *Última actualización: 2026-05-11*

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, Send, CheckCircle2, AlertCircle, FileDown, Printer, Share2, Download, Phone } from "lucide-react";
 import { cn } from "../lib/utils";
 import jsPDF from "jspdf";
@@ -9,6 +9,43 @@ export default function Registro() {
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [folioId, setFolioId] = useState<number | null>(null);
+  const [availableDates, setAvailableDates] = useState<{ date: string, formatted: string }[]>([]);
+  const [preferredDate1, setPreferredDate1] = useState("");
+  const [preferredDate2, setPreferredDate2] = useState("");
+  const [isLoadingDates, setIsLoadingDates] = useState(true);
+
+  useEffect(() => {
+    const fetchDates = async () => {
+      try {
+        console.log("Fetching available dates...");
+        const res = await fetch("/api/available-dates");
+        const data = await res.json();
+        setAvailableDates(data.availableDates || []);
+      } catch (err) {
+        console.error("Error fetching dates:", err);
+      } finally {
+        setIsLoadingDates(false);
+      }
+    };
+    fetchDates();
+  }, []);
+
+  const formatearFecha = (isoDate: string) => {
+    try {
+      const fecha = new Date(isoDate);
+      return new Intl.DateTimeFormat('es-MX', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: 'America/Mexico_City'
+      }).format(fecha);
+    } catch (e) {
+      return isoDate;
+    }
+  };
 
   const compressImage = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -56,6 +93,29 @@ export default function Registro() {
     const formData = new FormData(form);
     const trap = formData.get("_trap");
     if (trap) { setSubmitStatus("success"); return; }
+
+    // Validaciones de fechas
+    const p1 = formData.get("preferred_date_1") as string;
+    const p2 = formData.get("preferred_date_2") as string;
+
+    if (!p1 || !p2) {
+      alert("Por favor selecciona ambas opciones de fecha.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (p1 === p2) {
+      alert("La segunda opción de fecha debe ser diferente a la primera.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (new Date(p1) > new Date(p2)) {
+      alert("La primera opción de fecha debe ser anterior a la segunda (por orden cronológico).");
+      setIsSubmitting(false);
+      return;
+    }
+
     const photoFile = formData.get("photo") as File;
 
     if (photoFile && photoFile.size > 0) {
@@ -81,6 +141,8 @@ export default function Registro() {
       setSubmitStatus("success");
       form.reset();
       setPhotoPreview(null);
+      setPreferredDate1("");
+      setPreferredDate2("");
     } catch (error) {
       console.error(error);
       setSubmitStatus("error");
@@ -331,6 +393,69 @@ export default function Registro() {
                 className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FF3366] focus:border-[#FF3366] focus:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all outline-none text-white text-sm resize-none"
                 placeholder="Contamos con proyector, audio y PC. ¿Necesitas algo más?"
               />
+            </div>
+          </div>
+
+          <div className="space-y-5 pt-4">
+            <h2 className="text-xl font-serif font-bold text-white border-b border-[#333333] pb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#FFCC00]" />
+              Disponibilidad
+            </h2>
+            <p className="text-xs text-[#A0A0A0]">
+              Selecciona dos miércoles en los que podrías dar tu charla (sujeto a disponibilidad).
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="preferred_date_1" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
+                  Primera opción de fecha *
+                </label>
+                <select
+                  id="preferred_date_1"
+                  name="preferred_date_1"
+                  required
+                  value={preferredDate1}
+                  onChange={(e) => {
+                    setPreferredDate1(e.target.value);
+                    if (e.target.value === preferredDate2) setPreferredDate2("");
+                  }}
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FFCC00] focus:border-[#FFCC00] focus:shadow-[0_0_15px_rgba(255,204,0,0.2)] transition-all outline-none text-white text-sm appearance-none"
+                >
+                  <option value="">{isLoadingDates ? "Cargando fechas..." : "Selecciona una fecha"}</option>
+                  {availableDates.map(d => (
+                    <option key={d.date} value={d.date}>
+                      {formatearFecha(d.date)}
+                    </option>
+                  ))}
+                </select>
+                {!isLoadingDates && availableDates.length === 0 && (
+                  <p className="text-[10px] text-[#FF3366]">No hay fechas disponibles próximas. Contacta al administrador.</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="preferred_date_2" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
+                  Segunda opción de fecha (alternativa) *
+                </label>
+                <select
+                  id="preferred_date_2"
+                  name="preferred_date_2"
+                  required
+                  value={preferredDate2}
+                  disabled={!preferredDate1}
+                  onChange={(e) => setPreferredDate2(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FFCC00] focus:border-[#FFCC00] focus:shadow-[0_0_15px_rgba(255,204,0,0.2)] transition-all outline-none text-white text-sm appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">{preferredDate1 ? "Selecciona alternativa" : "Primero elige la 1ª opción"}</option>
+                  {availableDates
+                    .filter(d => d.date !== preferredDate1)
+                    .map(d => (
+                      <option key={d.date} value={d.date}>
+                        {formatearFecha(d.date)}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
           </div>
 
