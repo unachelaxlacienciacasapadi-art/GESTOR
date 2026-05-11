@@ -121,7 +121,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
     - ✅ Fase 1: Backend + Base de Datos ← COMPLETADA 2026-05-11
     - ✅ Fase 2: Frontend Registro (selector de 2 fechas) ← COMPLETADA 2026-05-11
     - ✅ Fase 3: Admin Panel (gestionar disponibilidad) ← COMPLETADA 2026-05-11
-4.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
+4.  **Integración de emails:** ✅ Completada con Resend. Sistema de confirmación automática activado.
 5.  **Cartelera pública:** ✅ Funcional y desplegada.
 6.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
 7.  **Sistema de Fechas Disponibles:** ✅ Completado. Listo para validación final.

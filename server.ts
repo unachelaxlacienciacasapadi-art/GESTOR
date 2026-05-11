@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { toZonedTime, format as tzFormat } from "date-fns-tz";
 import { addDays, startOfDay, isAfter } from "date-fns";
+import { sendConfirmationEmail } from "./src/lib/email";
+
 
 dotenv.config();
 
@@ -372,13 +374,26 @@ app.get("/api/available-dates", async (req, res) => {
 app.get("/api/talks", async (req, res) => {
   try {
     const includeAll = req.query.includeAll === "true";
+    const status = req.query.status as string;
+    const limit = parseInt(req.query.limit as string) || null;
+
     let query: string;
+    let values: any[] = [];
+
     if (includeAll) {
       query = "SELECT * FROM talks ORDER BY created_at DESC";
+    } else if (status) {
+      query = "SELECT * FROM talks WHERE status = $1 ORDER BY scheduled_date DESC";
+      values = [status];
     } else {
-      query = "SELECT * FROM talks WHERE status = 'approved' AND scheduled_date IS NOT NULL ORDER BY scheduled_date DESC";
+      query = "SELECT * FROM talks WHERE (status = 'approved' OR status = 'scheduled' OR status = 'completed') AND scheduled_date IS NOT NULL ORDER BY scheduled_date DESC";
     }
-    const { rows } = await pool.query(query);
+
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+
+    const { rows } = await pool.query(query, values);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -449,6 +464,15 @@ app.post("/api/talks", upload.single("photo"), async (req, res) => {
     ]);
 
     console.log(`Propuesta guardada con éxito. Folio: #${rows[0].id}`);
+    
+    // Enviar email de confirmación (sin bloquear la respuesta)
+    sendConfirmationEmail({
+      id: rows[0].id,
+      title, abstract, speaker_name, speaker_bio,
+      email, phone, social_media, technical_needs,
+      preferred_date_1, preferred_date_2
+    }).catch(err => console.error("Error al enviar email de confirmación:", err));
+
     res.status(201).json({ id: rows[0].id, message: "Talk submitted successfully" });
   } catch (err: any) {
     console.error("Error en POST /api/talks:", err);
