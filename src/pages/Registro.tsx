@@ -54,6 +54,8 @@ export default function Registro() {
     setSubmitStatus("idle");
 
     const formData = new FormData(form);
+    const trap = formData.get("_trap");
+    if (trap) { setSubmitStatus("success"); return; }
     const photoFile = formData.get("photo") as File;
 
     if (photoFile && photoFile.size > 0) {
@@ -451,6 +453,14 @@ export default function Registro() {
           </div>
 
           <div className="pt-6">
+            <input
+              type="text"
+              name="_trap"
+              autoComplete="off"
+              tabIndex={-1}
+              aria-hidden="true"
+              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
+            />
             <button
               type="submit"
               disabled={isSubmitting}

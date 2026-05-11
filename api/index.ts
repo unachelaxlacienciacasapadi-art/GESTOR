@@ -3,6 +3,8 @@ import { Pool } from "pg";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
+import { z } from "zod";
 
 dotenv.config();
 
@@ -83,6 +85,11 @@ pool.query(`
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+const talkLimiter = rateLimit({ windowMs: 60*60*1000, max: 5, message: { error: "Demasiadas propuestas. Intenta en una hora." }});
+const subscriberLimiter = rateLimit({ windowMs: 60*60*1000, max: 3, message: { error: "Demasiadas suscripciones." }});
+const talkSchema = z.object({ title: z.string().min(5).max(200), abstract: z.string().min(10).max(2000), speaker_name: z.string().min(2).max(100), speaker_bio: z.string().min(10).max(1000), email: z.string().email(), phone: z.string().regex(/^\d{10}$/), _trap: z.string().max(0) });
+const subscriberSchema = z.object({ email: z.string().email() });
+
 // ── Routes ──────────────────────────────────────────────────────────────────
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
@@ -99,8 +106,10 @@ app.post("/api/admin/login", (req, res) => {
   }
 });
 
-app.post("/api/subscribers", async (req, res) => {
+app.post("/api/subscribers", subscriberLimiter, async (req, res) => {
   try {
+    const parsed = subscriberSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Email inválido" });
     await pool.query("INSERT INTO subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING", [req.body.email]);
     res.json({ success: true });
   } catch { res.status(500).json({ error: "Failed to subscribe" }); }
@@ -180,8 +189,10 @@ app.get("/api/talks", async (_req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: "Failed to fetch talks" }); }
 });
 
-app.post("/api/talks", upload.single("photo"), async (req, res) => {
+app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => {
   try {
+    const parsed = talkSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Datos inválidos" });
     console.log("POST /api/talks - Recibiendo propuesta...");
     const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs } = req.body;
     let photoUrl = null;

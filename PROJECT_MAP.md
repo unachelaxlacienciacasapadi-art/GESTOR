@@ -42,6 +42,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 *   **Componentes:** `jspdf`, `html-to-image`, `lucide-react`.
 *   **Endpoints:**
     *   `POST /api/talks` ──▶ `talks` (tabla) ✅
+    *   `GET /api/available-dates` ──▶ lógica en servidor ✅ 🆕
 
 ---
 
@@ -54,12 +55,13 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 *   **Autenticación:** JWT para rutas protegidas (`/api/admin/*`, `PATCH`, `DELETE`).
 
 ### 📦 Base de Datos (PostgreSQL) ✅
-*   `talks`: Almacena propuestas y eventos agendados.
+*   `talks`: Almacena propuestas y eventos agendados. 🔄 Nuevos campos: `preferred_date_1`, `preferred_date_2`.
 *   `subscribers`: Lista de correos para el newsletter (con validación Zod).
 *   `topic_suggestions`: Ideas de la comunidad y votos.
 *   `feedback`: Calificaciones de las charlas.
 *   `checkins`: Registro de asistencia para el Pasaporte.
 *   `contacts`: Directorio de artistas y proveedores.
+*   `custom_availability`: Excepciones de disponibilidad (fechas bloqueadas/extra). 🆕
 
 ### 🔑 Variables de Entorno (Vercel/Local)
 *   `DATABASE_URL`: ✅ Definida (Supabase/PostgreSQL).
@@ -72,6 +74,24 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ---
 
+## 🆕 FEATURE EN DESARROLLO: Sistema de Fechas Disponibles
+
+### Endpoints nuevos
+*   `GET /api/available-dates` → Genera miércoles disponibles (+3 meses, 19:00 MX) filtrando excepciones y charlas aprobadas. 🆕
+*   `POST /api/admin/availability` → Crea excepción de disponibilidad (requiere JWT). 🆕
+*   `GET /api/admin/availability` → Lista todas las excepciones activas (requiere JWT). 🆕
+*   `DELETE /api/admin/availability/:id` → Elimina excepción por ID (requiere JWT). 🆕
+
+### Endpoints modificados
+*   `POST /api/talks` → Acepta `preferred_date_1`, `preferred_date_2`. Valida que sean miércoles y no estén bloqueadas. 🔄
+*   `GET /api/talks` → Con `?includeAll=true` retorna todas las charlas (para admin). Sin parámetros: solo `approved` con fecha. 🔄
+*   `PATCH /api/talks/:id` → Al aprobar (`status=approved`), valida que exista `scheduled_date`. 🔄
+
+### Dependencias nuevas
+*   `date-fns-tz` → Manejo de zona horaria `America/Mexico_City`.
+
+---
+
 ## 🚀 PRÓXIMOS PASOS
 
 1.  **Fix de credenciales Git (PAT):** ✅ Completado y verificado con push exitoso. El remoto utiliza el token de `unachelaxlacienciacasapadi-art`.
@@ -79,6 +99,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 3.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
 4.  **Cartelera pública:** ✅ Funcional y desplegada.
 5.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
+6.  **Sistema de Fechas Disponibles (Fase 1):** ✅ Backend implementado. Pendiente: integrar selector en `Registro.tsx` (Fase 2).
 
 ---
 *Última actualización: 2026-05-11*
