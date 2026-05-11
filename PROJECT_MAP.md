@@ -47,9 +47,15 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ## 🏗️ Infraestructura del Backend (`server.ts`)
 
+### ⚙️ Servidor y API (`server.ts` / `api/index.ts`) ✅
+*   **Vercel Entry Point:** `api/index.ts` (Configurado para Serverless).
+*   **Validación:** Uso de `zod` para esquemas de datos en propuestas y suscripciones.
+*   **Seguridad:** `express-rate-limit` implementado para prevenir abuso en `/api/talks` y `/api/subscribers`.
+*   **Autenticación:** JWT para rutas protegidas (`/api/admin/*`, `PATCH`, `DELETE`).
+
 ### 📦 Base de Datos (PostgreSQL) ✅
 *   `talks`: Almacena propuestas y eventos agendados.
-*   `subscribers`: Lista de correos para el newsletter.
+*   `subscribers`: Lista de correos para el newsletter (con validación Zod).
 *   `topic_suggestions`: Ideas de la comunidad y votos.
 *   `feedback`: Calificaciones de las charlas.
 *   `checkins`: Registro de asistencia para el Pasaporte.
@@ -68,11 +74,11 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ## 🚀 PRÓXIMOS PASOS
 
-1.  **Fix de credenciales Git (PAT):** ✅ Completado. El remoto se configuró con un Personal Access Token para evitar conflictos de autenticación entre cuentas en Windows.
-2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente. Asegurar que `DATABASE_URL`, `JWT_SECRET` y `ADMIN_PASSWORD` no estén vacías en la consola de Vercel (marcadas como "Needs Attention").
-3.  **Integración de emails:** 🛠️ En desarrollo. Configurar un servicio (SendGrid/Resend) para enviar notificaciones de registro y promos de charlas.
-4.  **Cartelera pública:** ✅ Funcional. La sección de cartelera ya consume `/api/talks` y muestra eventos aprobados. Falta pulir filtros por fecha.
-5.  **Passport de Ciencia:** ✅ Funcional. El sistema de check-ins y visualización de pasaporte por correo electrónico está implementado. Falta agregar el escáner QR en el panel admin para agilizar la asistencia.
+1.  **Fix de credenciales Git (PAT):** ✅ Completado y verificado con push exitoso. El remoto utiliza el token de `unachelaxlacienciacasapadi-art`.
+2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente de validación manual en el dashboard.
+3.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
+4.  **Cartelera pública:** ✅ Funcional y desplegada.
+5.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
 
 ---
 *Última actualización: 2026-05-11*
