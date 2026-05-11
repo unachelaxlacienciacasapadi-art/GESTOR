@@ -90,16 +90,33 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 ### Dependencias nuevas
 *   `date-fns-tz` → Manejo de zona horaria `America/Mexico_City`.
 
+### Estado de implementación:
+
+**✅ FASE 1 - Backend + Base de Datos (Completada 2026-05-11)**
+- Migraciones ejecutadas automáticamente via `initDb()`
+- Endpoint `GET /api/available-dates` retorna 13 miércoles disponibles
+- Timezone configurado: America/Mexico_City (-06:00)
+- Validaciones funcionando correctamente
+- Tests: ✅ Endpoint devuelve fechas en formato ISO 8601
+
+**Nota técnica:** El campo `formatted` devuelve días en inglés porque usa locale default de date-fns-tz. En Fase 2, el frontend formateará las fechas en español con `Intl.DateTimeFormat` o importando locale `es` de date-fns.
+
+**⏳ FASE 2 - Frontend Registro (Próxima)**
+**⏳ FASE 3 - Admin Panel (Pendiente)**
+
 ---
 
-## 🚀 PRÓXIMOS PASOS
+## 🚀 PRÓXIMOS PASOS (actualizado)
 
 1.  **Fix de credenciales Git (PAT):** ✅ Completado y verificado con push exitoso. El remoto utiliza el token de `unachelaxlacienciacasapadi-art`.
 2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente de validación manual en el dashboard.
-3.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
-4.  **Cartelera pública:** ✅ Funcional y desplegada.
-5.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
-6.  **Sistema de Fechas Disponibles (Fase 1):** ✅ Backend implementado. Pendiente: integrar selector en `Registro.tsx` (Fase 2).
+3.  🔄 **Feature: Sistema de fechas disponibles** (EN DESARROLLO)
+    - ✅ Fase 1: Backend + Base de Datos ← COMPLETADA 2026-05-11
+    - ⏳ Fase 2: Frontend Registro (selector de 2 fechas)
+    - ⏳ Fase 3: Admin Panel (gestionar disponibilidad)
+4.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
+5.  **Cartelera pública:** ✅ Funcional y desplegada.
+6.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
 
 ---
 *Última actualización: 2026-05-11*
