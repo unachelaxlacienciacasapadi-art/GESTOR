@@ -8,6 +8,8 @@ import logoImg from "../assets/logo.png";
 
 import AdminAgendaCalendar from "../components/AdminAgendaCalendar";
 import AdminCarteleraPreview from "../components/AdminCarteleraPreview";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 type Talk = {
   id: number;
@@ -30,6 +32,348 @@ type Talk = {
   created_at: string;
 };
 
+const AvailabilityManager = ({ token }: { token: string }) => {
+  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalReason, setModalReason] = useState("");
+  const [modalTime, setModalTime] = useState("19:00");
+  const [approvedTalksDates, setApprovedTalksDates] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const resEx = await fetch('/api/admin/availability', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dataEx = await resEx.json();
+      setExceptions(dataEx.availability || []);
+
+      const resTalks = await fetch('/api/talks?includeAll=true', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dataTalks = await resTalks.json();
+      const dates = dataTalks
+        .filter((t: any) => t.status === 'approved' || t.status === 'scheduled')
+        .flatMap((t: any) => [t.preferred_date_1, t.preferred_date_2, t.scheduled_date])
+        .filter(Boolean)
+        .map((d: string) => d.slice(0, 10));
+      setApprovedTalksDates(dates);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  const isWednesday = (date: Date) => date.getDay() === 3;
+
+  const formatDateString = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().split('T')[0];
+  };
+
+  const getTileClass = ({ date, view }: { date: Date, view: string }) => {
+    if (view !== 'month') return "";
+    
+    const dateStr = formatDateString(date);
+    const exception = exceptions.find(e => e.date.startsWith(dateStr));
+    const hasTalk = approvedTalksDates.includes(dateStr);
+
+    if (hasTalk) {
+      return "!bg-[#333333]/50 !text-[#A0A0A0] !cursor-not-allowed"; 
+    }
+
+    if (exception) {
+      return exception.is_available 
+        ? "!bg-[#00FFCC]/20 !text-[#00FFCC] !border !border-[#00FFCC]/50" 
+        : "!bg-[#FF3366]/20 !text-[#FF3366] !border !border-[#FF3366]/50"; 
+    }
+
+    if (isWednesday(date)) {
+      return "!bg-[#FFCC00]/20 !text-[#FFCC00] !border !border-[#FFCC00]/50"; 
+    }
+
+    return "!text-[#E0E0E0] hover:!bg-[#333333]";
+  };
+
+  const handleDateClick = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+       alert("No puedes modificar fechas pasadas.");
+       return;
+    }
+
+    const dateStr = formatDateString(date);
+    const hasTalk = approvedTalksDates.includes(dateStr);
+    
+    if (hasTalk && isWednesday(date)) {
+      alert("Esta fecha ya tiene una charla aprobada o agendada.");
+      return;
+    }
+
+    setSelectedDate(date);
+    setModalReason("");
+    setModalTime("19:00");
+    setShowModal(true);
+  };
+
+  const handleSaveException = async (isAvailable: boolean) => {
+    if (!selectedDate) return;
+    if (!modalReason.trim()) {
+      alert("Debes proporcionar una razón.");
+      return;
+    }
+    
+    setIsSaving(true);
+    const dateStr = formatDateString(selectedDate);
+    
+    try {
+      await fetch('/api/admin/availability', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          date: dateStr,
+          time: modalTime.length === 5 ? `${modalTime}:00` : modalTime,
+          is_available: isAvailable,
+          reason: modalReason
+        })
+      });
+      await fetchData();
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar excepción");
+    }
+    setIsSaving(false);
+  };
+
+  const handleDeleteException = async (id: number) => {
+    if (!window.confirm("¿Seguro que deseas eliminar esta excepción?")) return;
+    try {
+      await fetch(`/api/admin/availability/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await fetchData();
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error al eliminar excepción");
+    }
+  };
+
+  const formatearFecha = (isoDate: string) => {
+    try {
+      const fecha = new Date(isoDate);
+      return new Intl.DateTimeFormat('es-MX', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'America/Mexico_City'
+      }).format(fecha);
+    } catch (e) {
+      return isoDate;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <style>{`
+        .react-calendar { background: #141414 !important; border: 1px solid #333333 !important; border-radius: 1rem; color: white !important; font-family: inherit !important; padding: 1rem; width: 100% !important; }
+        .react-calendar__navigation button { color: white !important; min-width: 44px; background: none; font-size: 16px; margin-top: 8px; border-radius: 0.5rem; }
+        .react-calendar__navigation button:hover, .react-calendar__navigation button:focus { background: #333333 !important; }
+        .react-calendar__month-view__weekdays { text-transform: uppercase; font-weight: bold; font-size: 0.75em; color: #A0A0A0; padding-bottom: 0.5rem; }
+        .react-calendar__month-view__days__day--neighboringMonth { color: #444444 !important; }
+        .react-calendar__tile { padding: 0.75em 0.5em !important; border-radius: 0.5rem !important; margin: 2px !important; height: auto !important; transition: all 0.2s; }
+        .react-calendar__tile:disabled { background-color: #0A0A0A !important; }
+        .react-calendar__tile--now { background: #333333 !important; }
+      `}</style>
+
+      <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6">
+        <h2 className="text-xl font-serif font-bold text-white mb-4">Gestionar Disponibilidad de Fechas</h2>
+        
+        <div className="flex gap-4 mb-6 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
+            <span className="w-3 h-3 rounded-full bg-[#FFCC00]/20 border border-[#FFCC00]/50 block"></span> Miércoles Disponibles
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
+            <span className="w-3 h-3 rounded-full bg-[#00FFCC]/20 border border-[#00FFCC]/50 block"></span> Fechas Extra
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
+            <span className="w-3 h-3 rounded-full bg-[#FF3366]/20 border border-[#FF3366]/50 block"></span> Miércoles Bloqueados
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
+            <span className="w-3 h-3 rounded-full bg-[#333333]/50 block"></span> Ocupado (Aprobada)
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+             <div className="w-8 h-8 border-4 border-[#FFCC00]/30 border-t-[#FFCC00] rounded-full animate-spin" />
+          </div>
+        ) : (
+          <Calendar
+            onClickDay={handleDateClick}
+            tileClassName={getTileClass}
+            minDetail="month"
+            next2Label={null}
+            prev2Label={null}
+          />
+        )}
+      </div>
+
+      <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Excepciones Activas</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#333333] text-[#A0A0A0] text-xs uppercase tracking-wider">
+                <th className="p-3">Fecha</th>
+                <th className="p-3">Tipo</th>
+                <th className="p-3">Razón</th>
+                <th className="p-3">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {exceptions.map(ex => (
+                <tr key={ex.id} className="border-b border-[#222222] text-sm text-white hover:bg-[#1A1A1A]">
+                  <td className="p-3 capitalize">{formatearFecha(`${ex.date}T${ex.time}`)}</td>
+                  <td className="p-3">
+                    <span className={cn(
+                      "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
+                      ex.is_available ? "bg-[#00FFCC]/20 text-[#00FFCC]" : "bg-[#FF3366]/20 text-[#FF3366]"
+                    )}>
+                      {ex.is_available ? "Habilitada" : "Bloqueada"}
+                    </span>
+                  </td>
+                  <td className="p-3 text-[#A0A0A0]">{ex.reason || "-"}</td>
+                  <td className="p-3">
+                    <button 
+                      onClick={() => handleDeleteException(ex.id)}
+                      className="text-[#FF3366] hover:text-white transition-colors text-xs"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {exceptions.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-6 text-center text-[#A0A0A0] text-sm italic">
+                    No hay excepciones activas.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {showModal && selectedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#141414] rounded-2xl shadow-2xl border border-[#333333] p-6 w-full max-w-md">
+            <h3 className="text-xl font-serif font-bold text-white mb-4 capitalize">
+              {formatearFecha(formatDateString(selectedDate) + 'T12:00:00')}
+            </h3>
+            
+            {(() => {
+              const dateStr = formatDateString(selectedDate);
+              const existingEx = exceptions.find(e => e.date.startsWith(dateStr));
+              
+              if (existingEx) {
+                return (
+                  <div className="space-y-4">
+                    <p className="text-sm text-[#A0A0A0]">
+                      Esta fecha tiene una excepción activa: 
+                      <strong className={existingEx.is_available ? "text-[#00FFCC] ml-1" : "text-[#FF3366] ml-1"}>
+                        {existingEx.is_available ? "Habilitada" : "Bloqueada"}
+                      </strong>
+                    </p>
+                    <p className="text-sm text-white bg-[#0A0A0A] p-3 rounded-lg border border-[#333333]">
+                      Razón: {existingEx.reason || "Sin razón"}
+                    </p>
+                    <div className="flex gap-3 pt-4">
+                      <button onClick={() => setShowModal(false)} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#333333] hover:bg-[#444444]">
+                        Cerrar
+                      </button>
+                      <button onClick={() => handleDeleteException(existingEx.id)} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#FF3366] hover:bg-[#FF1A53] shadow-[0_0_15px_rgba(255,51,102,0.3)]">
+                        Eliminar Excepción
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              const isWed = isWednesday(selectedDate);
+
+              return (
+                <div className="space-y-4">
+                  <p className="text-sm text-[#E0E0E0]">
+                    {isWed 
+                      ? "¿Deseas bloquear este miércoles para que nadie pueda seleccionarlo?" 
+                      : "¿Deseas habilitar esta fecha como una opción extra disponible?"}
+                  </p>
+                  
+                  {!isWed && (
+                    <div>
+                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
+                      <input 
+                        type="time" 
+                        value={modalTime}
+                        onChange={e => setModalTime(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" 
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Razón / Evento *</label>
+                    <input 
+                      type="text" 
+                      value={modalReason}
+                      onChange={e => setModalReason(e.target.value)}
+                      placeholder={isWed ? "Ej. Festivo nacional, vacaciones..." : "Ej. Evento especial de fin de semana"}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" 
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <button onClick={() => setShowModal(false)} disabled={isSaving} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#333333] hover:bg-[#444444] disabled:opacity-50">
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => handleSaveException(!isWed)} 
+                      disabled={isSaving}
+                      className={cn(
+                        "flex-1 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50",
+                        isWed ? "bg-[#FF3366] hover:bg-[#FF1A53] shadow-[0_0_15px_rgba(255,51,102,0.3)]" : "bg-[#00FFCC] text-black hover:bg-[#00CCAA] shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+                      )}
+                    >
+                      {isSaving ? "Guardando..." : isWed ? "Bloquear Miércoles" : "Habilitar Fecha"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return !!localStorage.getItem("adminToken");
@@ -44,7 +388,7 @@ export default function Admin() {
   const [contacts, setContacts] = useState<{id: number, name: string, type: string, contact_person: string, phone: string, social_media: string, notes: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTalk, setSelectedTalk] = useState<Talk | null>(null);
-  const [activeTab, setActiveTab] = useState<"list" | "agenda" | "design" | "dashboard">("dashboard");
+  const [activeTab, setActiveTab] = useState<"list" | "agenda" | "design" | "dashboard" | "availability">("dashboard");
   
   // Contacts Form Form
   const [showContactForm, setShowContactForm] = useState(false);
@@ -256,7 +600,7 @@ export default function Admin() {
 
   const fetchTalks = async () => {
     try {
-      const res = await fetch("/api/talks");
+      const res = await fetch("/api/talks?includeAll=true");
       const data = await res.json();
       if (Array.isArray(data)) {
         setTalks(data);
@@ -356,8 +700,8 @@ export default function Admin() {
   }
 
   // Handle tab change
-  const handleTabChange = (tab: "list" | "calendar" | "design" | "dashboard" | "agenda" | "contacts", keepSelection = false) => {
-    setActiveTab(tab);
+  const handleTabChange = (tab: "list" | "calendar" | "design" | "dashboard" | "agenda" | "contacts" | "availability", keepSelection = false) => {
+    setActiveTab(tab as any);
     if (!keepSelection) {
       setSelectedTalk(null); // Reset selection when changing tabs to avoid confusion
     }
@@ -495,6 +839,16 @@ export default function Admin() {
           >
             Dashboard
           </button>
+          <button
+            onClick={() => handleTabChange("availability")}
+            className={cn(
+              "px-5 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1",
+              activeTab === "availability" ? "bg-[#FFCC00] text-black shadow-[0_0_10px_rgba(255,204,0,0.4)]" : "text-[#A0A0A0] hover:text-white"
+            )}
+          >
+            <CalendarIcon className="w-3.5 h-3.5" />
+            Disponibilidad
+          </button>
         </div>
         
         <button
@@ -606,6 +960,10 @@ export default function Admin() {
               </div>
             </div>
             {/* FIN DIRECTORIO */}
+          </div>
+        ) : activeTab === "availability" ? (
+          <div className="lg:col-span-3">
+            <AvailabilityManager token={localStorage.getItem("adminToken") || ""} />
           </div>
         ) : activeTab === "agenda" ? (
           <div className="lg:col-span-3">

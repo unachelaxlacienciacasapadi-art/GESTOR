@@ -105,8 +105,10 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 - Formateo en español usando `Intl.DateTimeFormat`.
 - Validaciones: fechas diferentes y orden cronológico.
 
-**⏳ FASE 3 - Admin Panel (Próxima)**
-- Gestionar disponibilidad y excepciones desde el panel de administración.
+**✅ FASE 3 - Admin Panel (Completada 2026-05-11)**
+- Nueva sección 'Disponibilidad' en Admin.tsx con integración de react-calendar.
+- Visualización de fechas con códigos de colores (disponibles, bloqueadas, ocupadas, extras).
+- Modales para crear/bloquear excepciones y tabla para listarlas/eliminarlas.
 
 
 ---
@@ -115,14 +117,14 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 1.  **Fix de credenciales Git (PAT):** ✅ Completado y verificado con push exitoso. El remoto utiliza el token de `unachelaxlacienciacasapadi-art`.
 2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente de validación manual en el dashboard.
-3.  🔄 **Feature: Sistema de fechas disponibles** (EN DESARROLLO)
+3.  ✅ **Feature: Sistema de fechas disponibles** (COMPLETADO)
     - ✅ Fase 1: Backend + Base de Datos ← COMPLETADA 2026-05-11
     - ✅ Fase 2: Frontend Registro (selector de 2 fechas) ← COMPLETADA 2026-05-11
-    - ⏳ Fase 3: Admin Panel (gestionar disponibilidad)
+    - ✅ Fase 3: Admin Panel (gestionar disponibilidad) ← COMPLETADA 2026-05-11
 4.  **Integración de emails:** 🛠️ En desarrollo. Pendiente elegir entre SendGrid o Resend.
 5.  **Cartelera pública:** ✅ Funcional y desplegada.
 6.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
-7.  **Sistema de Fechas Disponibles (Fase 2):** ✅ Frontend implementado. Pendiente: Fase 3 (Admin Panel).
+7.  **Sistema de Fechas Disponibles:** ✅ Completado. Listo para validación final.
 
 ---
 *Última actualización: 2026-05-11*
