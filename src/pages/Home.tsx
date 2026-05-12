@@ -18,10 +18,9 @@ import comunidadImg from "../assets/comunidad.jpeg";
 import memoriasImg from "../assets/memorias.jpeg";
 
 const TABS = [
-  { value: "proximas", label: <span>🎤 Próximas</span> },
+  { value: "proximas", label: <span>🎤 Próximas & Comunidad</span> },
   { value: "galeria",  label: <span>📸 Galería</span>  },
-  { value: "info",     label: <span>ℹ️ Info</span>     },
-  { value: "comunidad",label: <span>🏛️ Comunidad</span>},
+  { value: "info",     label: <span>ℹ️ Casa Pädi</span>     },
 ];
 
 const safeFormat = (d: string | null | undefined, f: string) => {
@@ -135,10 +134,58 @@ export default function Home() {
       {/* ── TABS ────────────────────────────────────── */}
       <HomeTabs tabs={TABS} defaultValue="proximas">
 
-        {/* TAB 1: Próximas */}
+        {/* TAB 1: Próximas & Comunidad */}
         <TabPanel tabValue="proximas">
           <NextTalkCard talk={nextTalk} />
           <UpcomingTalksCarousel talks={upcomingTalks} />
+
+          {/* Sección Comunidad */}
+          <div className="mt-12 bg-gradient-to-br from-[#0A0A0A] to-[#1A1A1A] rounded-2xl p-8 border border-[#333333]">
+            <h3 className="text-2xl font-serif font-bold text-white mb-6 text-center">
+              🏛️ Únete a la Comunidad
+            </h3>
+            
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-[#00FFCC] mb-2">
+                  {recentTalks.length}
+                </div>
+                <p className="text-sm text-[#A0A0A0]">Charlas recientes</p>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-[#FFCC00] mb-2">
+                  {nextTalk ? '1' : '0'}
+                </div>
+                <p className="text-sm text-[#A0A0A0]">Próxima charla</p>
+              </div>
+            </div>
+
+            {/* Newsletter form */}
+            <div className="bg-gradient-to-r from-[#FF3366]/20 to-[#9933FF]/20 rounded-3xl p-8 border border-[#FF3366]/30 shadow-[0_0_30px_rgba(255,51,102,0.15)] flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#FF3366] to-[#9933FF] rounded-full mix-blend-screen filter blur-[80px] opacity-30 pointer-events-none translate-x-1/2 -translate-y-1/2" />
+              <div className="flex-1 text-left relative z-10">
+                <h2 className="text-2xl font-serif font-bold text-white mb-2">No te pierdas ninguna charla</h2>
+                <p className="text-[#A0A0A0] text-sm">Suscríbete y recibe recordatorios, resúmenes y noticias de la comunidad.</p>
+              </div>
+              <div className="w-full md:w-auto relative z-10">
+                {subStatus === "ok" ? (
+                  <div className="px-8 py-3 bg-[#00FFCC]/10 border border-[#00FFCC]/30 rounded-full text-[#00FFCC] font-bold text-sm text-center">
+                    ¡Gracias por suscribirte! 🎉
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
+                    <input type="email" name="email" required placeholder="Tu correo" className="bg-[#141414] border border-[#333333] text-white px-5 py-3 rounded-full focus:outline-none focus:border-[#FF3366] min-w-[200px] transition-colors text-sm" />
+                    <button type="submit" disabled={subStatus === "loading"} className="bg-[#FF3366] text-white font-bold px-6 py-3 rounded-full hover:bg-[#E60039] transition-colors shadow-[0_0_15px_rgba(255,51,102,0.4)] whitespace-nowrap disabled:opacity-60 text-sm">
+                      {subStatus === "loading" ? "Enviando..." : "Suscribirme"}
+                    </button>
+                  </form>
+                )}
+                {subStatus === "error" && (
+                  <p className="text-[#FF3366] text-xs mt-2 text-center">Hubo un error. Inténtalo de nuevo.</p>
+                )}
+              </div>
+            </div>
+          </div>
         </TabPanel>
 
         {/* TAB 2: Galería */}
@@ -172,83 +219,7 @@ export default function Home() {
           </div>
         </TabPanel>
 
-        {/* TAB 4: Comunidad */}
-        <TabPanel tabValue="comunidad">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <CasaPadiCard />
-            </div>
-
-            {/* Recent talks feed */}
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#FF3366]" />
-                Charlas Recientes
-              </h3>
-              {recentTalks.length > 0 ? recentTalks.map((talk, idx) => {
-                const COLORS = ["hover:border-[#FF3366]/50", "hover:border-[#00FFCC]/50", "hover:border-[#FFCC00]/50", "hover:border-[#9933FF]/50"];
-                const TXT = ["text-[#FF3366]", "text-[#00FFCC]", "text-[#FFCC00]", "text-[#9933FF]"];
-                return (
-                  <div key={talk.id} className={cn("bg-gradient-to-r from-[#1A1A1A] to-[#0A0A0A] border border-[#333333] rounded-2xl p-4 flex flex-col sm:flex-row gap-4 transition-all duration-300 hover:-translate-y-1 group", COLORS[idx % COLORS.length])}>
-                    <div className="w-full sm:w-24 h-24 rounded-xl bg-[#222222] flex-shrink-0 overflow-hidden relative">
-                      {talk.speaker_photo_url
-                        ? <img src={talk.speaker_photo_url} alt={talk.speaker_name} loading="lazy" decoding="async" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                        : <div className="absolute inset-0 flex items-center justify-center text-[#555555]"><Calendar className="w-7 h-7" /></div>
-                      }
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center">
-                      <div className={cn("text-xs font-bold mb-1 capitalize", TXT[idx % TXT.length])}>
-                        {safeFormat(talk.scheduled_date, "eee, d MMM. yyyy")}
-                      </div>
-                      <h4 className="text-base font-bold text-white mb-1 line-clamp-2">{talk.title}</h4>
-                      <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
-                        <Users className="w-3 h-3" />
-                        <span>{talk.speaker_name}</span>
-                        <span>·</span>
-                        <span className="capitalize">{talk.category || "General"}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }) : (
-                <div className="py-12 text-center border border-dashed border-[#333333] rounded-2xl text-[#A0A0A0] text-sm">
-                  No hay charlas recientes registradas aún.
-                </div>
-              )}
-            </div>
-          </div>
-        </TabPanel>
-
       </HomeTabs>
-
-      {/* ── NEWSLETTER ──────────────────────────────── */}
-      <div className="max-w-6xl mx-auto w-full px-4 py-16 mt-4">
-        <div className="bg-gradient-to-r from-[#FF3366]/20 to-[#9933FF]/20 rounded-3xl p-8 md:p-12 border border-[#FF3366]/30 shadow-[0_0_30px_rgba(255,51,102,0.15)] flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#FF3366] to-[#9933FF] rounded-full mix-blend-screen filter blur-[80px] opacity-30 pointer-events-none translate-x-1/2 -translate-y-1/2" />
-          <div className="flex-1 text-left relative z-10">
-            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">No te pierdas ninguna charla</h2>
-            <p className="text-[#A0A0A0] max-w-xl">Suscríbete y recibe recordatorios, resúmenes y noticias de la comunidad.</p>
-          </div>
-          <div className="w-full md:w-auto relative z-10">
-            {subStatus === "ok" ? (
-              <div className="px-8 py-4 bg-[#00FFCC]/10 border border-[#00FFCC]/30 rounded-full text-[#00FFCC] font-bold text-sm text-center">
-                ¡Gracias por suscribirte! 🎉
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
-                <input type="email" name="email" required placeholder="Tu correo electrónico" className="bg-[#141414] border border-[#333333] text-white px-6 py-3.5 rounded-full focus:outline-none focus:border-[#FF3366] min-w-[240px] transition-colors" />
-                <button type="submit" disabled={subStatus === "loading"} className="bg-[#FF3366] text-white font-bold px-7 py-3.5 rounded-full hover:bg-[#E60039] transition-colors shadow-[0_0_15px_rgba(255,51,102,0.4)] whitespace-nowrap disabled:opacity-60">
-                  {subStatus === "loading" ? "Enviando..." : "Suscribirme"}
-                </button>
-              </form>
-            )}
-            {subStatus === "error" && (
-              <p className="text-[#FF3366] text-xs mt-2 text-center">Hubo un error. Inténtalo de nuevo.</p>
-            )}
-          </div>
-        </div>
-      </div>
 
     </div>
   );

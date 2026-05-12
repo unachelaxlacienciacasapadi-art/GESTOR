@@ -1127,6 +1127,114 @@ export default function Admin() {
                         </button>
                       </div>
 
+                      {/* Flyer Upload Section */}
+                      <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] space-y-4 mb-6">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
+                            Flyer Promocional (Opcional)
+                          </h3>
+                          {editSpeakerPhotoUrl && selectedTalk?.speaker_photo_url && (
+                            <a 
+                              href={selectedTalk.speaker_photo_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-[#00FFCC] hover:underline"
+                            >
+                              Ver flyer actual
+                            </a>
+                          )}
+                        </div>
+
+                        {selectedTalk?.speaker_photo_url && (
+                          <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
+                            <img 
+                              src={selectedTalk.speaker_photo_url} 
+                              alt="Flyer preview"
+                              className="max-h-64 rounded-lg border border-[#333333] object-contain"
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
+                            URL del Flyer (Google Drive, Cloudinary, etc.)
+                          </label>
+                          <input
+                            type="text"
+                            value={editSpeakerPhotoUrl}
+                            onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)}
+                            placeholder="https://drive.google.com/file/d/... o URL directa"
+                            className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
+                          />
+                          <p className="text-xs text-[#A0A0A0] mt-2">
+                            💡 Este flyer se incluirá en el mensaje de WhatsApp. Sube la imagen a Drive/Cloudinary y pega el enlace público aquí.
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={handleSaveDetails}
+                          disabled={isSavingDetails}
+                          className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+                        >
+                          {isSavingDetails ? "Guardando..." : "Guardar Flyer"}
+                        </button>
+                      </div>
+
+                      {/* Flyer Upload Section */}
+                      <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] space-y-4 mb-6">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
+                            Flyer Promocional (Opcional)
+                          </h3>
+                          {editSpeakerPhotoUrl && selectedTalk?.speaker_photo_url && (
+                            <a 
+                              href={selectedTalk.speaker_photo_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-[#00FFCC] hover:underline"
+                            >
+                              Ver flyer actual
+                            </a>
+                          )}
+                        </div>
+
+                        {selectedTalk?.speaker_photo_url && (
+                          <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
+                            <img 
+                              src={selectedTalk.speaker_photo_url} 
+                              alt="Flyer preview"
+                              className="max-h-64 rounded-lg border border-[#333333] object-contain"
+                            />
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
+                            URL del Flyer (Google Drive, Cloudinary, etc.)
+                          </label>
+                          <input
+                            type="text"
+                            value={editSpeakerPhotoUrl}
+                            onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)}
+                            placeholder="https://drive.google.com/file/d/... o URL directa"
+                            className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
+                          />
+                          <p className="text-xs text-[#A0A0A0] mt-2">
+                            💡 Este flyer se incluirá en el mensaje de WhatsApp. Sube la imagen a Drive/Cloudinary y pega el enlace público aquí.
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={handleSaveDetails}
+                          disabled={isSavingDetails}
+                          className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+                        >
+                          {isSavingDetails ? "Guardando..." : "Guardar Flyer"}
+                        </button>
+                      </div>
+
                       {/* Poster Preview Area */}
                       <div className="flex justify-center bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] overflow-hidden">
                         <div
