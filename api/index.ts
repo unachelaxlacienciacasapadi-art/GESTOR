@@ -182,11 +182,35 @@ app.get("/api/speakers", async (_req, res) => {
   } catch { res.status(500).json({ error: "Failed to fetch speakers" }); }
 });
 
-app.get("/api/talks", async (_req, res) => {
+app.get("/api/talks", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM talks ORDER BY created_at DESC");
+    const includeAll = req.query.includeAll === "true";
+    const status = req.query.status as string;
+    const limit = parseInt(req.query.limit as string) || null;
+
+    let query: string;
+    let values: any[] = [];
+
+    if (includeAll) {
+      query = "SELECT * FROM talks ORDER BY created_at DESC";
+    } else if (status) {
+      query = "SELECT * FROM talks WHERE status = $1 ORDER BY scheduled_date DESC";
+      values = [status];
+    } else {
+      // FIX: Mostrar solo charlas agendadas (scheduled) con fecha futura para la cartelera
+      query = "SELECT * FROM talks WHERE status = 'scheduled' AND scheduled_date IS NOT NULL AND scheduled_date >= CURRENT_TIMESTAMP ORDER BY scheduled_date ASC";
+    }
+
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+
+    const { rows } = await pool.query(query, values);
     res.json(rows);
-  } catch (err) { console.error(err); res.status(500).json({ error: "Failed to fetch talks" }); }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch talks" });
+  }
 });
 
 app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => {

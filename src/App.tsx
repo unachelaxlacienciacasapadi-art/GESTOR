@@ -5,7 +5,7 @@ import Cartelera from "./pages/Cartelera";
 import Registro from "./pages/Registro";
 import Admin from "./pages/Admin";
 import Comunidad from "./pages/Comunidad";
-import logoPng from "./assets/logo.png";
+
 
 function NavContent() {
   const location = useLocation();
@@ -21,7 +21,7 @@ function NavContent() {
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative h-14 w-14 bg-white rounded-full p-0.5 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300 group-hover:scale-110">
-                <img src={logoPng} alt="Una Chela por la Ciencia" className="h-full w-full object-contain mix-blend-multiply scale-110" />
+                <img src="/assets/logo.webp" alt="Una Chela por la Ciencia" className="h-full w-full object-contain mix-blend-multiply scale-110" />
               </div>
               <span className="font-serif font-bold text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-[#A0A0A0] group-hover:to-white transition-colors hidden sm:block">Casa Padi</span>
             </Link>

@@ -361,8 +361,11 @@ app.get("/api/available-dates", async (req, res) => {
       cursor.setDate(cursor.getDate() + 7);
     }
 
-    console.log(`Fechas disponibles generadas: ${availableDates.length}`);
-    res.json({ availableDates });
+    const limit = parseInt(req.query.limit as string) || null;
+    const finalDates = limit ? availableDates.slice(0, limit) : availableDates;
+
+    console.log(`Fechas disponibles generadas: ${finalDates.length}`);
+    res.json({ availableDates: finalDates });
   } catch (err: any) {
     console.error("Error en GET /api/available-dates:", err);
     res.status(500).json({ error: "Failed to generate available dates", details: err.message });
@@ -386,7 +389,8 @@ app.get("/api/talks", async (req, res) => {
       query = "SELECT * FROM talks WHERE status = $1 ORDER BY scheduled_date DESC";
       values = [status];
     } else {
-      query = "SELECT * FROM talks WHERE (status = 'approved' OR status = 'scheduled' OR status = 'completed') AND scheduled_date IS NOT NULL ORDER BY scheduled_date DESC";
+      // FIX: Mostrar solo charlas agendadas (scheduled) con fecha futura para la cartelera
+      query = "SELECT * FROM talks WHERE status = 'scheduled' AND scheduled_date IS NOT NULL AND scheduled_date >= CURRENT_TIMESTAMP ORDER BY scheduled_date ASC";
     }
 
     if (limit) {
@@ -658,10 +662,15 @@ app.post("/api/admin/availability", authenticateToken, async (req, res) => {
 // GET /api/admin/availability - Listar todas las excepciones
 app.get("/api/admin/availability", authenticateToken, async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit as string) || null;
     console.log("GET /api/admin/availability - Obteniendo excepciones...");
-    const { rows } = await pool.query(
-      `SELECT * FROM custom_availability ORDER BY date ASC, time ASC`
-    );
+    
+    let query = "SELECT * FROM custom_availability ORDER BY date ASC, time ASC";
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    
+    const { rows } = await pool.query(query);
     res.json({ availability: rows });
   } catch (err: any) {
     console.error("Error en GET /api/admin/availability:", err);
