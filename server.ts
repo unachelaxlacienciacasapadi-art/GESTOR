@@ -288,90 +288,6 @@ app.get("/api/speakers", async (req, res) => {
   }
 });
 
-// GET /api/available-dates
-// Genera miércoles disponibles de los próximos 3 meses a las 19:00 MX
-app.get("/api/available-dates", async (req, res) => {
-  try {
-    console.log("GET /api/available-dates - Calculando fechas disponibles...");
-    const nowUtc = new Date();
-    const nowMx = toZonedTime(nowUtc, TIMEZONE);
-    // Fechas disponibles: desde mañana hasta +3 meses
-    const tomorrowMx = startOfDay(addDays(nowMx, 1));
-    const endDateMx = new Date(nowMx);
-    endDateMx.setMonth(endDateMx.getMonth() + 3);
-
-    // Obtener excepciones de custom_availability dentro del rango
-    const { rows: exceptions } = await pool.query(
-      `SELECT date::text, time::text, is_available, reason FROM custom_availability
-       WHERE date >= $1 AND date <= $2`,
-      [tomorrowMx.toISOString().slice(0, 10), endDateMx.toISOString().slice(0, 10)]
-    );
-    const exceptionMap = new Map<string, { is_available: boolean; reason: string | null }>();
-    for (const ex of exceptions) {
-      exceptionMap.set(ex.date, { is_available: ex.is_available, reason: ex.reason });
-    }
-
-    // Obtener fechas ya ocupadas por charlas aprobadas
-    const { rows: approvedTalks } = await pool.query(
-      `SELECT preferred_date_1, preferred_date_2 FROM talks WHERE status = 'approved'`
-    );
-    const occupiedDates = new Set<string>();
-    for (const t of approvedTalks) {
-      if (t.preferred_date_1) occupiedDates.add(new Date(t.preferred_date_1).toISOString().slice(0, 10));
-      if (t.preferred_date_2) occupiedDates.add(new Date(t.preferred_date_2).toISOString().slice(0, 10));
-    }
-
-    // Generar todos los miércoles en el rango
-    const availableDates: { date: string; formatted: string }[] = [];
-    const cursor = new Date(tomorrowMx);
-    // Avanzar al próximo miércoles (día 3)
-    while (cursor.getDay() !== 3) cursor.setDate(cursor.getDate() + 1);
-
-    while (cursor <= endDateMx) {
-      const dateStr = cursor.toISOString().slice(0, 10);
-      const exception = exceptionMap.get(dateStr);
-
-      // Si hay excepción y marca como no disponible, saltar
-      if (exception && !exception.is_available) {
-        cursor.setDate(cursor.getDate() + 7);
-        continue;
-      }
-      // Si está ocupada por una charla aprobada, saltar
-      if (occupiedDates.has(dateStr)) {
-        cursor.setDate(cursor.getDate() + 7);
-        continue;
-      }
-
-      // Construir timestamp a las 19:00 MX
-      const dtMx = new Date(`${dateStr}T19:00:00`);
-      const isoDate = tzFormat(
-        toZonedTime(dtMx, TIMEZONE),
-        "yyyy-MM-dd'T'HH:mm:ssxxx",
-        { timeZone: TIMEZONE }
-      );
-
-      // Formato legible en español
-      const formatted = tzFormat(
-        toZonedTime(dtMx, TIMEZONE),
-        "EEEE d 'de' MMMM 'de' yyyy - HH:mm",
-        { timeZone: TIMEZONE }
-      );
-
-      availableDates.push({ date: isoDate, formatted });
-      cursor.setDate(cursor.getDate() + 7);
-    }
-
-    const limit = parseInt(req.query.limit as string) || null;
-    const finalDates = limit ? availableDates.slice(0, limit) : availableDates;
-
-    console.log(`Fechas disponibles generadas: ${finalDates.length}`);
-    res.json({ availableDates: finalDates });
-  } catch (err: any) {
-    console.error("Error en GET /api/available-dates:", err);
-    res.status(500).json({ error: "Failed to generate available dates", details: err.message });
-  }
-});
-
 // GET /api/talks
 // Default: charlas aprobadas con fecha. Con ?includeAll=true retorna todas (para admin)
 app.get("/api/talks", async (req, res) => {
@@ -700,30 +616,14 @@ app.delete("/api/admin/availability/:id", authenticateToken, async (req, res) =>
 // Endpoint para fechas disponibles (formulario público)
 app.get("/api/available-dates", async (_req, res) => {
   try {
-    // 1. Obtener excepciones de availability
-    const { rows: exceptions } = await pool.query(
-      "SELECT date, time, is_available FROM availability WHERE date >= CURRENT_DATE"
-    );
-
-    // 2. Obtener charlas ya agendadas
+    // Obtener charlas ya agendadas
     const { rows: scheduled } = await pool.query(
       "SELECT scheduled_date FROM talks WHERE status = 'scheduled' AND scheduled_date >= CURRENT_DATE"
     );
 
     const blockedDates = new Set<string>();
-    const extraDates = new Set<string>();
 
-    // Procesar excepciones
-    exceptions.forEach((ex: any) => {
-      const dateStr = ex.date.split('T')[0]; // YYYY-MM-DD
-      if (ex.is_available) {
-        extraDates.add(dateStr);
-      } else {
-        blockedDates.add(dateStr);
-      }
-    });
-
-    // Procesar charlas agendadas
+    // Marcar fechas ocupadas
     scheduled.forEach((t: any) => {
       if (t.scheduled_date) {
         const dateStr = new Date(t.scheduled_date).toISOString().split('T')[0];
@@ -731,7 +631,7 @@ app.get("/api/available-dates", async (_req, res) => {
       }
     });
 
-    // 3. Generar miércoles de próximos 3 meses
+    // Generar miércoles de próximos 3 meses
     const availableDates: { date: string; formatted: string }[] = [];
     const today = new Date();
     const threeMonthsLater = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
@@ -741,7 +641,7 @@ app.get("/api/available-dates", async (_req, res) => {
       const dateStr = currentDate.toISOString().split('T')[0];
       const dayOfWeek = currentDate.getDay();
 
-      // Miércoles (3) y no bloqueado
+      // Solo miércoles y no ocupados
       if (dayOfWeek === 3 && !blockedDates.has(dateStr)) {
         const formatted = new Intl.DateTimeFormat('es-MX', {
           weekday: 'long',
@@ -755,24 +655,6 @@ app.get("/api/available-dates", async (_req, res) => {
 
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    // 4. Agregar fechas extra habilitadas
-    extraDates.forEach(dateStr => {
-      if (!blockedDates.has(dateStr)) {
-        const date = new Date(dateStr + 'T12:00:00Z');
-        const formatted = new Intl.DateTimeFormat('es-MX', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'America/Mexico_City'
-        }).format(date);
-        availableDates.push({ date: dateStr, formatted });
-      }
-    });
-
-    // 5. Ordenar por fecha
-    availableDates.sort((a, b) => a.date.localeCompare(b.date));
 
     res.json({ availableDates });
   } catch (err) {
