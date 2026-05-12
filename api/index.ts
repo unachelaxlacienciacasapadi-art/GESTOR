@@ -334,17 +334,10 @@ app.get("/api/available-dates", async (_req, res) => {
     // Generar miércoles de próximos 3 meses EN TIMEZONE MÉXICO
     const availableDates: { date: string; formatted: string }[] = [];
     
-    // Fecha actual en México
-    const nowMexico = new Date(new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Mexico_City',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).format(new Date()).split('/').reverse().join('-') + 'T19:00:00');
+    const today = new Date(); // Fecha actual del servidor
+    const threeMonthsLater = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
 
-    const threeMonthsLater = new Date(nowMexico.getTime() + 90 * 24 * 60 * 60 * 1000);
-
-    let currentDate = new Date(nowMexico);
+    let currentDate = new Date(today);
     
     while (currentDate <= threeMonthsLater) {
       // Obtener día de la semana EN MÉXICO
