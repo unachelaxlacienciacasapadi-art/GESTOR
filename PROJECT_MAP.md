@@ -40,7 +40,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 ### ⚙️ Servidor y API (`server.ts` / `api/index.ts`) ✅
 *   **Vercel Entry Point:** `api/index.ts`.
 *   **Lógica de Fechas:** Endpoint `/api/available-dates` simplificado para eliminar dependencia de tablas externas, calculando dinámicamente los miércoles y cruzando con charlas agendadas en la tabla `talks`.
-*   **Timezone:** Cálculos forzados a `America/Mexico_City` para evitar desfases UTC.
+*   **Timezone:** Cálculos forzados a `America/Mexico_City` para evitar desfases UTC. Backend y frontend sincronizados para garantizar la visualización de las 19:00 hrs. ✅
 
 ### 📦 Base de Datos (PostgreSQL) ✅
 *   `talks`: Almacena propuestas, eventos y **URLs de flyers**.
@@ -66,7 +66,8 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 2.  **Dashboard Admin:** ✅ Completado. Métricas consolidadas y gestión de flyers.
 3.  **Refactor Home:** ✅ Completado. Tabs unificados y newsletter integrado.
 4.  **Available Dates:** ✅ Completado. Lógica simplificada e inmune a desfases de timezone.
-5.  **Calendar Fix:** ✅ Completado. Formato ISO 8601 en el panel de administración.
+5.  **Timezone Sync:** ✅ Completado. Corrección del error de visualización (13:00 vs 19:00) en todos los componentes. 🆕
+6.  **Calendar Fix:** ✅ Completado. Formato ISO 8601 en el panel de administración.
 
 ---
-*Última actualización: 2026-05-11 (Finalización Dashboard & Integraciones)*
+*Última actualización: 2026-05-11 (Sincronización Horaria Final)*
