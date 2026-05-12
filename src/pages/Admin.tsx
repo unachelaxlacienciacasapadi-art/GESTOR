@@ -698,9 +698,10 @@ export default function Admin() {
   // Filter talks based on active tab
   const filteredTalks = talks.filter(talk => {
     if (activeTab === "list") return talk.status === "pending" || talk.status === "rejected" || talk.status === "approved";
-    if (activeTab === "calendar") return talk.status === "approved" || talk.status === "scheduled";
+    if (activeTab === "calendar") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
     if (activeTab === "design") return talk.status === "scheduled" || talk.status === "completed";
-    if (activeTab === "dashboard" || activeTab === "agenda" || activeTab === "contacts") return false;
+    if (activeTab === "agenda") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
+    if (activeTab === "dashboard" || activeTab === "contacts") return false;
     return true;
   });
 
