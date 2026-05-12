@@ -340,12 +340,17 @@ app.get("/api/available-dates", async (_req, res) => {
     let currentDate = new Date(today);
     
     while (currentDate <= threeMonthsLater) {
-      // Obtener día de la semana EN MÉXICO
-      const dayOfWeekMX = new Date(currentDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })).getDay();
+      // Obtener fecha en México
+      const mxDateString = currentDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
+      const mxDateObj = new Date(mxDateString);
+      const dayOfWeekMX = mxDateObj.getDay();
       
       // Solo miércoles (3) y no ocupados
       if (dayOfWeekMX === 3) {
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const yyyy = mxDateObj.getFullYear();
+        const mm = String(mxDateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(mxDateObj.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
         
         if (!blockedDates.has(dateStr)) {
           // Fecha a las 19:00 (7 PM) hora México
@@ -356,10 +361,8 @@ app.get("/api/available-dates", async (_req, res) => {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            timeZone: 'America/Mexico_City'
-          }).format(new Date(dateWithTime));
+            timeZone: 'UTC'
+          }).format(new Date(dateStr + 'T00:00:00Z')) + ', 7:00 p. m.';
           
           availableDates.push({ date: dateWithTime, formatted });
         }
