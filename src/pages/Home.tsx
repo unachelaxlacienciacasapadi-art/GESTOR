@@ -27,7 +27,19 @@ const safeFormat = (d: string | null | undefined, f: string) => {
   if (!d) return "";
   try {
     const parsed = parseISO(d.replace(" ", "T"));
-    return isNaN(parsed.getTime()) ? "" : format(parsed, f, { locale: es });
+    if (isNaN(parsed.getTime())) return "";
+
+    // Forzar siempre a America/Mexico_City para evitar desfases UTC/Local
+    if (f === "HH:mm") {
+      return new Intl.DateTimeFormat('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'America/Mexico_City'
+      }).format(parsed);
+    }
+
+    return format(parsed, f, { locale: es });
   } catch { return ""; }
 };
 

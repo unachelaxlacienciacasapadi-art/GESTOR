@@ -56,8 +56,20 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
   const safeFormatDate = (dateString: string | null | undefined, formatStr: string) => {
     if (!dateString) return "";
     try {
-      const parsed = parseISO(dateString);
+      const normalized = dateString.replace(" ", "T");
+      const parsed = parseISO(normalized);
       if (isNaN(parsed.getTime())) return "";
+      
+      // Forzar siempre a America/Mexico_City para evitar desfases UTC/Local
+      if (formatStr === "HH:mm") {
+        return new Intl.DateTimeFormat('es-MX', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'America/Mexico_City'
+        }).format(parsed);
+      }
+
       return format(parsed, formatStr, { locale: es });
     } catch (e) {
       return "";
