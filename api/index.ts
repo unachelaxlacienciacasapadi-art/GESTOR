@@ -331,26 +331,45 @@ app.get("/api/available-dates", async (_req, res) => {
       }
     });
 
-    // Generar miércoles de próximos 3 meses
+    // Generar miércoles de próximos 3 meses EN TIMEZONE MÉXICO
     const availableDates: { date: string; formatted: string }[] = [];
-    const today = new Date();
-    const threeMonthsLater = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+    
+    // Fecha actual en México
+    const nowMexico = new Date(new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date()).split('/').reverse().join('-') + 'T19:00:00');
 
-    let currentDate = new Date(today);
+    const threeMonthsLater = new Date(nowMexico.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+    let currentDate = new Date(nowMexico);
+    
     while (currentDate <= threeMonthsLater) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const dayOfWeek = currentDate.getDay();
-
-      // Solo miércoles y no ocupados
-      if (dayOfWeek === 3 && !blockedDates.has(dateStr)) {
-        const formatted = new Intl.DateTimeFormat('es-MX', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'America/Mexico_City'
-        }).format(currentDate);
-        availableDates.push({ date: dateStr, formatted });
+      // Obtener día de la semana EN MÉXICO
+      const dayOfWeekMX = new Date(currentDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' })).getDay();
+      
+      // Solo miércoles (3) y no ocupados
+      if (dayOfWeekMX === 3) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        if (!blockedDates.has(dateStr)) {
+          // Fecha a las 19:00 (7 PM) hora México
+          const dateWithTime = dateStr + 'T19:00:00';
+          
+          const formatted = new Intl.DateTimeFormat('es-MX', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'America/Mexico_City'
+          }).format(new Date(dateWithTime));
+          
+          availableDates.push({ date: dateWithTime, formatted });
+        }
       }
 
       currentDate.setDate(currentDate.getDate() + 1);
