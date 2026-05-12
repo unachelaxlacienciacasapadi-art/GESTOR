@@ -2,6 +2,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar, Clock, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
+import WhatsAppShareButton from "../WhatsAppShareButton";
 
 interface NextTalkCardProps {
   talk: any | null;
@@ -86,20 +87,23 @@ export default function NextTalkCard({ talk }: NextTalkCardProps) {
             {talk.abstract}
           </p>
 
-          <div className="mt-auto flex flex-col sm:flex-row items-center gap-4 justify-between border-t border-[#333333] pt-5">
-            <div className="flex items-center gap-2 text-[#E0E0E0] text-sm flex-1 font-medium bg-[#141414] px-4 py-2 rounded-xl">
+          <div className="mt-auto flex flex-col gap-3 border-t border-[#333333] pt-5">
+            <div className="flex items-center gap-2 text-[#E0E0E0] text-sm font-medium bg-[#141414] px-4 py-2 rounded-xl">
               <Calendar className="w-4 h-4 text-[#FF3366]" />
               {safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}
             </div>
-            <a
-              href={gcalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#F0F0F0] transition-colors whitespace-nowrap"
-            >
-              <Calendar className="w-4 h-4" />
-              Añadir al Calendario
-            </a>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a
+                href={gcalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#F0F0F0] transition-colors whitespace-nowrap"
+              >
+                <Calendar className="w-4 h-4" />
+                Añadir al Calendario
+              </a>
+              <WhatsAppShareButton talk={talk} variant="default" />
+            </div>
           </div>
         </div>
       </div>

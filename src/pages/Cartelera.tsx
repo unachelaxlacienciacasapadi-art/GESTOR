@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar, MapPin, Clock, Image as ImageIcon, X, ChevronLeft, ChevronRight, MonitorPlay } from "lucide-react";
+import WhatsAppShareButton from "../components/WhatsAppShareButton";
 
 type Talk = {
   id: number;
@@ -295,7 +296,7 @@ export default function Cartelera() {
                       <MapPin className="w-4 h-4" />
                       Casa Padi, Pachuca
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <a 
                         href={getCalendarLink(talk)}
                         target="_blank"
@@ -305,6 +306,7 @@ export default function Cartelera() {
                         <Calendar className="w-4 h-4" />
                         Añadir
                       </a>
+                      <WhatsAppShareButton talk={talk} variant="icon-only" />
                       {talk.transmission_url && (
                         <a 
                           href={talk.transmission_url} 
@@ -477,12 +479,17 @@ export default function Cartelera() {
           <div className="bg-[#141414] rounded-2xl shadow-2xl border border-[#333333] w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-[#333333]">
               <h3 className="text-lg font-serif font-bold text-white">Detalles de la Charla</h3>
-              <button 
-                onClick={() => setSelectedPastTalk(null)}
-                className="text-[#A0A0A0] hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-3">
+                {selectedPastTalk.scheduled_date && new Date(selectedPastTalk.scheduled_date) > new Date() && (
+                  <WhatsAppShareButton talk={selectedPastTalk} variant="compact" />
+                )}
+                <button 
+                  onClick={() => setSelectedPastTalk(null)}
+                  className="text-[#A0A0A0] hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">

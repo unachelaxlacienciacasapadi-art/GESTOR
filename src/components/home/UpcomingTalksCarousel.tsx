@@ -5,6 +5,7 @@ import { Calendar, ChevronLeft, ChevronRight, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCallback } from "react";
 import { cn } from "../../lib/utils";
+import WhatsAppShareButton from "../WhatsAppShareButton";
 
 interface Props {
   talks: any[];
@@ -96,10 +97,11 @@ export default function UpcomingTalksCarousel({ talks }: Props) {
               <div className="p-4">
                 <h4 className="text-sm font-bold text-white leading-snug mb-1 line-clamp-2">{talk.title}</h4>
                 <p className="text-xs text-[#A0A0A0] mb-3">{talk.speaker_name}</p>
-                <div className="flex items-center gap-1.5 text-xs text-[#00FFCC]">
+                <div className="flex items-center gap-1.5 text-xs text-[#00FFCC] mb-3">
                   <Calendar className="w-3.5 h-3.5" />
                   <span className="capitalize">{safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}</span>
                 </div>
+                <WhatsAppShareButton talk={talk} variant="compact" className="w-full" />
               </div>
             </div>
           ))}
