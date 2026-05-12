@@ -5,126 +5,68 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 ## 🚀 Arquitectura de Páginas (Frontend)
 
 ### 🏠 Inicio (`Home.tsx`) ✅
-*   **Componentes:** `React`, `Link` (react-router-dom), `lucide-react` icons.
-*   **Assets:** `logo.png`, `galeria*.jpeg`, `memorias*.jpeg`.
+*   **Refactor:** Pestañas "Próximas" y "Comunidad" consolidadas en una sola pestaña "🎤 Próximas & Comunidad".
+*   **Newsletter:** Formulario integrado directamente en el bloque de Comunidad (migrado desde el footer).
+*   **Componentes:** `React`, `Link`, `WhatsAppShareButton` 🆕, `lucide-react`.
 *   **Endpoints:**
     *   `GET /api/talks` ──▶ `talks` (tabla) ✅
     *   `POST /api/subscribers` ──▶ `subscribers` (tabla) ✅
 
 ### 🎬 Cartelera (`Cartelera.tsx`) ✅
-*   **Componentes:** `React`, `date-fns`, `lucide-react` icons.
+*   **Componentes:** `React`, `WhatsAppShareButton` 🆕, `lucide-react`.
 *   **Endpoints:**
     *   `GET /api/talks` ──▶ `talks` (tabla) ✅
-    *   `POST /api/talks/:id/feedback` ──▶ `feedback` (tabla) ✅
 
 ### 🛠️ Administración (`Admin.tsx`) ✅
-*   **Componentes:** `AdminAgendaCalendar`, `AdminCarteleraPreview`, `html-to-image`, `lucide-react`.
+*   **Mejoras:** 
+    *   **Métricas:** Dashboard actualizado para mostrar "Aprobadas + Agendadas" (consolidando ambos estados).
+    *   **Diseño:** Nueva sección para subir/previsualizar el **Flyer Promocional** de cada charla.
+    *   **Agenda:** Calendario corregido a formato **ISO 8601** (Lunes-Domingo) y filtrado para mostrar charlas aprobadas, agendadas y completadas.
+*   **Componentes:** `AdminAgendaCalendar`, `WhatsAppShareButton` 🆕, `react-calendar`, `lucide-react`.
 *   **Endpoints:**
-    *   `POST /api/admin/login` ──▶ (Auth via ENV) ✅
-    *   `GET /api/talks` ──▶ `talks` (tabla) ✅
-    *   `PATCH /api/talks/:id` ──▶ `talks` (tabla) ✅
-    *   `DELETE /api/talks/:id` ──▶ `talks` (tabla) ✅
-    *   `GET /api/subscribers` ──▶ `subscribers` (tabla) ✅
-    *   `GET /api/contacts` ──▶ `contacts` (tabla) ✅
-    *   `POST /api/contacts` ──▶ `contacts` (tabla) ✅
-    *   `GET /api/admin/backup` ──▶ `talks`, `subscribers`, `contacts` ✅
-
-### 👥 Comunidad (`Comunidad.tsx`) ✅
-*   **Componentes:** `React`, `date-fns`, `lucide-react`.
-*   **Endpoints:**
-    *   `GET /api/suggestions` ──▶ `topic_suggestions` (tabla) ✅
-    *   `POST /api/suggestions` ──▶ `topic_suggestions` (tabla) ✅
-    *   `POST /api/suggestions/:id/vote` ──▶ `topic_suggestions` (tabla) ✅
-    *   `GET /api/speakers` ──▶ `talks` (tabla) ✅
-    *   `GET /api/passport/:email` ──▶ `checkins` + `talks` ✅
+    *   `GET /api/talks` (con filtros de estado) ✅
+    *   `PATCH /api/talks/:id` (incluyendo actualización de `flyer_image_url`) ✅
+    *   `GET /api/available-dates` (lógica simplificada) ✅
+    *   `GET /api/subscribers`, `GET /api/contacts` ✅
 
 ### 📝 Registro (`Registro.tsx`) ✅
-*   **Componentes:** `jspdf`, `html-to-image`, `lucide-react`.
 *   **Endpoints:**
-    *   `POST /api/talks` ──▶ `talks` (tabla) ✅
-    *   `GET /api/available-dates` ──▶ lógica en servidor ✅ 🆕
+    *   `GET /api/available-dates` ──▶ Genera miércoles disponibles (+3 meses, 19:00 MX) filtrando solo charlas agendadas. ✅
 
 ---
 
 ## 🏗️ Infraestructura del Backend (`server.ts`)
 
 ### ⚙️ Servidor y API (`server.ts` / `api/index.ts`) ✅
-*   **Vercel Entry Point:** `api/index.ts` (Configurado para Serverless).
-*   **Validación:** Uso de `zod` para esquemas de datos en propuestas y suscripciones.
-*   **Seguridad:** `express-rate-limit` implementado para prevenir abuso en `/api/talks` y `/api/subscribers`.
-*   **Autenticación:** JWT para rutas protegidas (`/api/admin/*`, `PATCH`, `DELETE`).
+*   **Vercel Entry Point:** `api/index.ts`.
+*   **Lógica de Fechas:** Endpoint `/api/available-dates` simplificado para eliminar dependencia de tablas externas, calculando dinámicamente los miércoles y cruzando con charlas agendadas en la tabla `talks`.
+*   **Timezone:** Cálculos forzados a `America/Mexico_City` para evitar desfases UTC.
 
 ### 📦 Base de Datos (PostgreSQL) ✅
-*   `talks`: Almacena propuestas y eventos agendados. 🔄 Nuevos campos: `preferred_date_1`, `preferred_date_2`.
-*   `subscribers`: Lista de correos para el newsletter (con validación Zod).
+*   `talks`: Almacena propuestas, eventos y **URLs de flyers**.
+*   `subscribers`: Lista de correos para el newsletter.
 *   `topic_suggestions`: Ideas de la comunidad y votos.
 *   `feedback`: Calificaciones de las charlas.
-*   `checkins`: Registro de asistencia para el Pasaporte.
 *   `contacts`: Directorio de artistas y proveedores.
-*   `custom_availability`: Excepciones de disponibilidad (fechas bloqueadas/extra). 🆕
-
-### 🔑 Variables de Entorno (Vercel/Local)
-*   `DATABASE_URL`: ✅ Definida (Supabase/PostgreSQL).
-*   `JWT_SECRET`: ✅ Definida.
-*   `ADMIN_USERNAME`: ✅ Definida (`admin`).
-*   `ADMIN_PASSWORD`: ✅ Definida (`casapadi2024`).
-*   `PORT`: ✅ Definida (3000 o inyectada por host).
-*   ⚠️ `GEMINI_API_KEY`: Definida en Vercel pero sin uso activo en el código actual.
-*   ⚠️ `APP_URL`: Definida en Vercel pero sin uso activo en el código actual.
+*   `custom_availability`: (Depreciado/Opcional) Antiguo sistema de excepciones, actualmente la lógica es dinámica.
 
 ---
 
-## 🆕 FEATURE EN DESARROLLO: Sistema de Fechas Disponibles
+## 🆕 Reusable Components & Logic
 
-### Endpoints nuevos
-*   `GET /api/available-dates` → Genera miércoles disponibles (+3 meses, 19:00 MX) filtrando excepciones y charlas aprobadas. 🆕
-*   `POST /api/admin/availability` → Crea excepción de disponibilidad (requiere JWT). 🆕
-*   `GET /api/admin/availability` → Lista todas las excepciones activas (requiere JWT). 🆕
-*   `DELETE /api/admin/availability/:id` → Elimina excepción por ID (requiere JWT). 🆕
-
-### Endpoints modificados
-*   `POST /api/talks` → Acepta `preferred_date_1`, `preferred_date_2`. Valida que sean miércoles y no estén bloqueadas. 🔄
-*   `GET /api/talks` → Con `?includeAll=true` retorna todas las charlas (para admin). Sin parámetros: solo `approved` con fecha. 🔄
-*   `PATCH /api/talks/:id` → Al aprobar (`status=approved`), valida que exista `scheduled_date`. 🔄
-
-### Dependencias nuevas
-*   `date-fns-tz` → Manejo de zona horaria `America/Mexico_City`.
-
-### Estado de implementación:
-
-**✅ FASE 1 - Backend + Base de Datos (Completada 2026-05-11)**
-- Migraciones ejecutadas automáticamente via `initDb()`
-- Endpoint `GET /api/available-dates` retorna 13 miércoles disponibles
-- Timezone configurado: America/Mexico_City (-06:00)
-- Validaciones funcionando correctamente
-- Tests: ✅ Endpoint devuelve fechas en formato ISO 8601
-
-**✅ FASE 2 - Frontend Registro (Completada 2026-05-11)**
-- Selector de 2 fechas (1ª y 2ª opción) implementado en `Registro.tsx`.
-- Fetch de fechas disponibles al cargar el componente.
-- Formateo en español usando `Intl.DateTimeFormat`.
-- Validaciones: fechas diferentes y orden cronológico.
-
-**✅ FASE 3 - Admin Panel (Completada 2026-05-11)**
-- Nueva sección 'Disponibilidad' en Admin.tsx con integración de react-calendar.
-- Visualización de fechas con códigos de colores (disponibles, bloqueadas, ocupadas, extras).
-- Modales para crear/bloquear excepciones y tabla para listarlas/eliminarlas.
-
+### 🟢 `WhatsAppShareButton.tsx` 🆕
+*   Genera mensajes dinámicos con título, ponente, fecha, hora y enlace al flyer.
+*   Integrado en: `NextTalkCard`, `UpcomingTalksCarousel`, `Cartelera` y `Admin`.
 
 ---
 
-## 🚀 PRÓXIMOS PASOS (actualizado)
+## ✅ ESTADO DE IMPLEMENTACIÓN (Actualizado 2026-05-11)
 
-1.  **Fix de credenciales Git (PAT):** ✅ Completado y verificado con push exitoso. El remoto utiliza el token de `unachelaxlacienciacasapadi-art`.
-2.  **Verificar variables de entorno en Vercel:** ⚠️ Pendiente de validación manual en el dashboard.
-3.  ✅ **Feature: Sistema de fechas disponibles** (COMPLETADO)
-    - ✅ Fase 1: Backend + Base de Datos ← COMPLETADA 2026-05-11
-    - ✅ Fase 2: Frontend Registro (selector de 2 fechas) ← COMPLETADA 2026-05-11
-    - ✅ Fase 3: Admin Panel (gestionar disponibilidad) ← COMPLETADA 2026-05-11
-4.  **Integración de emails:** ✅ Completada con Resend. Sistema de confirmación automática activado.
-5.  **Cartelera pública:** ✅ Funcional y desplegada.
-6.  **Passport de Ciencia:** ✅ Lógica implementada. Pendiente integración de escáner de códigos QR para el Admin.
-7.  **Sistema de Fechas Disponibles:** ✅ Completado. Listo para validación final.
+1.  **WhatsApp Sharing:** ✅ Completado. Mensajes dinámicos con flyers.
+2.  **Dashboard Admin:** ✅ Completado. Métricas consolidadas y gestión de flyers.
+3.  **Refactor Home:** ✅ Completado. Tabs unificados y newsletter integrado.
+4.  **Available Dates:** ✅ Completado. Lógica simplificada e inmune a desfases de timezone.
+5.  **Calendar Fix:** ✅ Completado. Formato ISO 8601 en el panel de administración.
 
 ---
-*Última actualización: 2026-05-11*
+*Última actualización: 2026-05-11 (Finalización Dashboard & Integraciones)*
