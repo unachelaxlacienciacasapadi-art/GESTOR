@@ -311,4 +311,88 @@ app.get("/api/admin/backup", authenticateToken, async (_req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: "Failed to generate backup" }); }
 });
 
+// Endpoint para fechas disponibles (formulario público)
+app.get("/api/available-dates", async (_req, res) => {
+  try {
+    // 1. Obtener excepciones de availability
+    const { rows: exceptions } = await pool.query(
+      "SELECT date, time, is_available FROM availability WHERE date >= CURRENT_DATE"
+    );
+
+    // 2. Obtener charlas ya agendadas
+    const { rows: scheduled } = await pool.query(
+      "SELECT scheduled_date FROM talks WHERE status = 'scheduled' AND scheduled_date >= CURRENT_DATE"
+    );
+
+    const blockedDates = new Set<string>();
+    const extraDates = new Set<string>();
+
+    // Procesar excepciones
+    exceptions.forEach((ex: any) => {
+      const dateStr = ex.date.split('T')[0]; // YYYY-MM-DD
+      if (ex.is_available) {
+        extraDates.add(dateStr);
+      } else {
+        blockedDates.add(dateStr);
+      }
+    });
+
+    // Procesar charlas agendadas
+    scheduled.forEach((t: any) => {
+      if (t.scheduled_date) {
+        const dateStr = new Date(t.scheduled_date).toISOString().split('T')[0];
+        blockedDates.add(dateStr);
+      }
+    });
+
+    // 3. Generar miércoles de próximos 3 meses
+    const availableDates: { date: string; formatted: string }[] = [];
+    const today = new Date();
+    const threeMonthsLater = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+    let currentDate = new Date(today);
+    while (currentDate <= threeMonthsLater) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const dayOfWeek = currentDate.getDay();
+
+      // Miércoles (3) y no bloqueado
+      if (dayOfWeek === 3 && !blockedDates.has(dateStr)) {
+        const formatted = new Intl.DateTimeFormat('es-MX', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'America/Mexico_City'
+        }).format(currentDate);
+        availableDates.push({ date: dateStr, formatted });
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // 4. Agregar fechas extra habilitadas
+    extraDates.forEach(dateStr => {
+      if (!blockedDates.has(dateStr)) {
+        const date = new Date(dateStr + 'T12:00:00Z');
+        const formatted = new Intl.DateTimeFormat('es-MX', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'America/Mexico_City'
+        }).format(date);
+        availableDates.push({ date: dateStr, formatted });
+      }
+    });
+
+    // 5. Ordenar por fecha
+    availableDates.sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json({ availableDates });
+  } catch (err) {
+    console.error("Error in /api/available-dates:", err);
+    res.status(500).json({ error: "Failed to fetch available dates", availableDates: [] });
+  }
+});
+
 export default app;
