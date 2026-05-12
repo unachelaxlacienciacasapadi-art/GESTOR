@@ -34,8 +34,21 @@ function generateWhatsAppMessage(talk: TalkForShare): string {
     try {
       const parsed = parseISO(talk.scheduled_date.replace(" ", "T"));
       if (!isNaN(parsed.getTime())) {
-        dateStr = format(parsed, "EEEE d 'de' MMMM 'de' yyyy", { locale: es });
-        timeStr = format(parsed, "HH:mm", { locale: es });
+        // Formatear con timezone explícito de México
+        dateStr = new Intl.DateTimeFormat('es-MX', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'America/Mexico_City'
+        }).format(parsed);
+        
+        timeStr = new Intl.DateTimeFormat('es-MX', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'America/Mexico_City',
+          hour12: false
+        }).format(parsed);
       }
     } catch {}
   }
