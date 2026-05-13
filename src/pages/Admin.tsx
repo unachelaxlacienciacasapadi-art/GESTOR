@@ -236,7 +236,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
         ) : (
           <Calendar
             locale="es-MX"
-            calendarType="gregory"
+            calendarType="iso8601"
             onClickDay={handleDateClick}
             tileClassName={getTileClass}
             minDetail="month"
