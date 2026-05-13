@@ -476,6 +476,7 @@ export default function Admin() {
   const [isEditingAll, setIsEditingAll] = useState(false);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+  const [listFilter, setListFilter] = useState<"all" | "pending" | "approved" | "completed">("pending");
 
   useEffect(() => {
     if (selectedTalk) {
@@ -711,7 +712,7 @@ export default function Admin() {
 
   // Filter talks based on active tab
   const filteredTalks = talks.filter(talk => {
-    if (activeTab === "list") return talk.status === "pending" || talk.status === "rejected" || talk.status === "approved";
+    if (activeTab === "list") return true; // Mostrar todas las charlas
     if (activeTab === "calendar") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
     if (activeTab === "design") return talk.status === "scheduled" || talk.status === "completed";
     if (activeTab === "agenda") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
@@ -1013,8 +1014,31 @@ export default function Admin() {
                     </button>
                   )}
                 </div>
+                {activeTab === "list" && (
+                  <div className="px-4 py-3 bg-[#0A0A0A] border-b border-[#333333]">
+                    <select
+                      value={listFilter}
+                      onChange={(e) => setListFilter(e.target.value as any)}
+                      className="w-full bg-[#141414] border border-[#333333] text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-[#00FFCC] appearance-none cursor-pointer"
+                    >
+                      <option value="pending">Pendientes / Rechazadas</option>
+                      <option value="approved">Aprobadas / Agendadas</option>
+                      <option value="completed">Completadas</option>
+                      <option value="all">Todas</option>
+                    </select>
+                  </div>
+                )}
                 <div className="overflow-y-auto flex-1 p-2 space-y-2 custom-scrollbar">
-                  {filteredTalks.map((talk) => (
+                  {filteredTalks
+                    .filter(talk => {
+                      if (activeTab !== "list") return true;
+                      if (listFilter === "all") return true;
+                      if (listFilter === "pending") return talk.status === "pending" || talk.status === "rejected";
+                      if (listFilter === "approved") return talk.status === "approved" || talk.status === "scheduled";
+                      if (listFilter === "completed") return talk.status === "completed";
+                      return true;
+                    })
+                    .map((talk) => (
                     <button
                       key={talk.id}
                       onClick={() => setSelectedTalk(talk)}

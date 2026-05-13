@@ -20,8 +20,9 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 ### 🛠️ Administración (`Admin.tsx`) ✅
 *   **Mejoras:** 
     *   **Métricas:** Dashboard actualizado para mostrar "Aprobadas + Agendadas" (consolidando ambos estados).
+    *   **Listado:** Filtros dinámicos (Todas, Pendientes, Aprobadas, Completadas) integrados en UI.
     *   **Diseño:** Nueva sección para subir/previsualizar el **Flyer Promocional** de cada charla.
-    *   **Agenda:** Calendario corregido a formato **ISO 8601** (Lunes-Domingo) y filtrado para mostrar charlas aprobadas, agendadas y completadas.
+    *   **Agenda:** Calendario corregido a formato **gregory** (Domingo-Sábado) y filtrado para mostrar charlas aprobadas, agendadas y completadas.
 *   **Componentes:** `AdminAgendaCalendar`, `WhatsAppShareButton` 🆕, `react-calendar`, `lucide-react`.
 *   **Endpoints:**
     *   `GET /api/talks` (con filtros de estado) ✅
@@ -44,6 +45,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ### 📦 Base de Datos (PostgreSQL) ✅
 *   `talks`: Almacena propuestas, eventos y **URLs de flyers**.
+    *   *Nuevos campos preparados:* `stream_url`, `recap_summary`, `recap_photos` (fase de recap).
 *   `subscribers`: Lista de correos para el newsletter.
 *   `topic_suggestions`: Ideas de la comunidad y votos.
 *   `feedback`: Calificaciones de las charlas.
@@ -60,14 +62,15 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ---
 
-## ✅ ESTADO DE IMPLEMENTACIÓN (Actualizado 2026-05-11)
+## ✅ ESTADO DE IMPLEMENTACIÓN (Actualizado 2026-05-12)
 
 1.  **WhatsApp Sharing:** ✅ Completado. Mensajes dinámicos con flyers.
-2.  **Dashboard Admin:** ✅ Completado. Métricas consolidadas y gestión de flyers.
+2.  **Dashboard Admin:** ✅ Completado. Métricas consolidadas, gestión de flyers y nuevos filtros en el listado.
 3.  **Refactor Home:** ✅ Completado. Tabs unificados y newsletter integrado.
 4.  **Available Dates:** ✅ Completado. Lógica simplificada e inmune a desfases de timezone.
 5.  **Timezone Sync:** ✅ Completado. Corrección del error de visualización (13:00 vs 19:00) en todos los componentes. 🆕
-6.  **Calendar Fix:** ✅ Completado. Formato ISO 8601 en el panel de administración.
+6.  **Calendar Fix:** ✅ Completado. Formato gregory en el panel de administración.
+7.  **Preparación Recap:** ✅ Schema de base de datos listo para almacenar URLs de stream y recaps.
 
 ---
-*Última actualización: 2026-05-11 (Sincronización Horaria Final)*
+*Última actualización: 2026-05-12 (Nuevos filtros de admin y schema de recap)*

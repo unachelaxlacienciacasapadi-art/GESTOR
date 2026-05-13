@@ -93,6 +93,15 @@ pool.query(`
     BEGIN
       ALTER TABLE talks ADD COLUMN preferred_date_2 TIMESTAMP WITH TIME ZONE;
     EXCEPTION WHEN duplicate_column THEN END;
+    BEGIN
+      ALTER TABLE talks ADD COLUMN stream_url TEXT;
+    EXCEPTION WHEN duplicate_column THEN END;
+    BEGIN
+      ALTER TABLE talks ADD COLUMN recap_summary TEXT;
+    EXCEPTION WHEN duplicate_column THEN END;
+    BEGIN
+      ALTER TABLE talks ADD COLUMN recap_photos TEXT DEFAULT '[]';
+    EXCEPTION WHEN duplicate_column THEN END;
   END $$;
 
     -- Sync sequences robustly
@@ -266,7 +275,11 @@ app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => 
 
 app.patch("/api/talks/:id", authenticateToken, async (req, res) => {
   try {
-    const updates = req.body;
+    const allowedFields = ["title", "abstract", "speaker_name", "speaker_bio", "speaker_photo_url", "email", "phone", "social_media", "technical_needs", "transmission_url", "category", "promo_email_sent", "status", "scheduled_date", "summary", "event_photos", "flyer_image_url", "preferred_date_1", "preferred_date_2", "stream_url", "recap_summary", "recap_photos"];
+    const updates: any = {};
+    for (const key of Object.keys(req.body)) {
+      if (allowedFields.includes(key)) updates[key] = req.body[key];
+    }
     const keys = Object.keys(updates);
     if (keys.length === 0) return res.status(400).json({ error: "No fields to update" });
     const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
