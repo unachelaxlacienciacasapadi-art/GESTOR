@@ -44,6 +44,8 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
   const [editSpeakerName, setEditSpeakerName] = useState("");
   const [editPhotoUrl, setEditPhotoUrl] = useState("");
   const [editTime, setEditTime] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -111,6 +113,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     setEditSpeakerName(talk.speaker_name);
     setEditPhotoUrl(talk.speaker_photo_url || "");
     setEditTime(safeFormatDate(talk.scheduled_date, "HH:mm"));
+    setEditDate(safeFormatDate(talk.scheduled_date, "yyyy-MM-dd"));
     setShowEditModal(true);
   };
 
@@ -146,22 +149,23 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     e.preventDefault();
     if (!editingTalk) return;
 
-    let isoDate = editingTalk.scheduled_date;
-    if (editingTalk.scheduled_date && editTime) {
-      const existingDate = parseISO(editingTalk.scheduled_date);
-      isoDate = format(existingDate, "yyyy-MM-dd") + "T" + editTime;
-    }
-    
-    await updateTalk(editingTalk.id, {
+    const updates: any = {
       title: editTitle,
       category: editCategory,
       speaker_name: editSpeakerName,
       speaker_photo_url: formatDriveUrl(editPhotoUrl),
-    });
+    };
 
-    if (isoDate !== editingTalk.scheduled_date) {
-      await updateStatus(editingTalk.id, editingTalk.status, isoDate || undefined);
+    if (editDate && editTime) {
+      const isoDate = `${editDate}T${editTime}`;
+      if (isoDate !== editingTalk.scheduled_date) {
+        updates.scheduled_date = isoDate;
+      }
     }
+    
+    setIsSavingEdit(true);
+    await updateTalk(editingTalk.id, updates);
+    setIsSavingEdit(false);
 
     setShowEditModal(false);
     setEditingTalk(null);
@@ -358,14 +362,25 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
             </div>
             
             <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
-              <div>
-                <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora (solo hora, el día es fijo aquí)</label>
-                <input 
-                  type="time" 
-                  value={editTime} 
-                  onChange={(e) => setEditTime(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] focus:border-[#9933FF] outline-none text-white text-sm" 
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Fecha</label>
+                  <input 
+                    type="date" 
+                    value={editDate} 
+                    onChange={(e) => setEditDate(e.target.value)} 
+                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] focus:border-[#9933FF] outline-none text-white text-sm" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
+                  <input 
+                    type="time" 
+                    value={editTime} 
+                    onChange={(e) => setEditTime(e.target.value)} 
+                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] focus:border-[#9933FF] outline-none text-white text-sm" 
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de la Charla</label>
@@ -417,7 +432,16 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                 </button>
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cancelar</button>
-                  <button type="submit" className="bg-[#9933FF] text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#7A29CC]">Guardar Cambios</button>
+                  <button 
+                    type="submit" 
+                    disabled={isSavingEdit} 
+                    className="bg-[#9933FF] text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#7A29CC] disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isSavingEdit && (
+                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    )}
+                    {isSavingEdit ? "Guardando..." : "Guardar Cambios"}
+                  </button>
                 </div>
               </div>
             </form>
