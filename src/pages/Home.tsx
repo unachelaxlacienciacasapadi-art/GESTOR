@@ -229,6 +229,11 @@ export default function Home() {
               </div>
             ))}
           </div>
+
+          {/* Info de Casa Pädi - ubicación, contacto, redes */}
+          <div className="mt-8">
+            <CasaPadiCard />
+          </div>
         </TabPanel>
 
       </HomeTabs>
