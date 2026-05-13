@@ -310,6 +310,7 @@ app.get("/api/speakers", async (req, res) => {
 app.get("/api/talks", async (req, res) => {
   try {
     const includeAll = req.query.includeAll === "true";
+    const recent = req.query.recent === "true";
     const status = req.query.status as string;
     const limit = parseInt(req.query.limit as string) || null;
 
@@ -318,6 +319,8 @@ app.get("/api/talks", async (req, res) => {
 
     if (includeAll) {
       query = "SELECT * FROM talks ORDER BY created_at DESC";
+    } else if (recent) {
+      query = "SELECT * FROM talks WHERE status IN ('scheduled', 'completed', 'approved') ORDER BY scheduled_date DESC LIMIT 4";
     } else if (status) {
       query = "SELECT * FROM talks WHERE status = $1 ORDER BY scheduled_date DESC";
       values = [status];

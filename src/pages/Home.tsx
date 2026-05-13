@@ -73,7 +73,7 @@ export default function Home() {
       .catch(console.error);
 
     // Recent completed talks for community tab
-    fetch("/api/talks?status=completed")
+    fetch("/api/talks?recent=true")
       .then(r => r.json())
       .then(data => setRecentTalks(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -159,7 +159,10 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#00FFCC] mb-2">
-                  {recentTalks.length}
+                  {recentTalks.filter(t => 
+                    t.status === 'completed' || 
+                    new Date(t.scheduled_date).getTime() < Date.now()
+                  ).length || upcomingTalks.length + (nextTalk ? 1 : 0)}
                 </div>
                 <p className="text-sm text-[#A0A0A0]">Charlas realizadas</p>
               </div>
