@@ -126,8 +126,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     if (!selectedDate) return;
     
     // YYYY-MM-DDTHH:MM formatting for the backend
-    const combinedDateString = format(selectedDate, "yyyy-MM-dd") + "T" + timeInput;
-    const isoDate = new Date(combinedDateString).toISOString();
+    const isoDate = format(selectedDate, "yyyy-MM-dd") + "T" + timeInput;
 
     if (selectedPendingTalk === "NEW") {
       await createTalk({
@@ -150,8 +149,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     let isoDate = editingTalk.scheduled_date;
     if (editingTalk.scheduled_date && editTime) {
       const existingDate = parseISO(editingTalk.scheduled_date);
-      const combinedDateString = format(existingDate, "yyyy-MM-dd") + "T" + editTime;
-      isoDate = new Date(combinedDateString).toISOString();
+      isoDate = format(existingDate, "yyyy-MM-dd") + "T" + editTime;
     }
     
     await updateTalk(editingTalk.id, {

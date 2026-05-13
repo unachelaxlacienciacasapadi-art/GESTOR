@@ -1431,8 +1431,7 @@ export default function Admin() {
                                   value={selectedTalk.scheduled_date ? selectedTalk.scheduled_date.slice(0, 16) : ""}
                                   onChange={(e) => {
                                     if (e.target.value) {
-                                      const isoDate = new Date(e.target.value).toISOString();
-                                      updateStatus(selectedTalk.id, "scheduled", isoDate);
+                                      updateStatus(selectedTalk.id, "scheduled", e.target.value);
                                     }
                                   }}
                                 />

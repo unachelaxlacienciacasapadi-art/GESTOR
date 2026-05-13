@@ -1,5 +1,5 @@
 import express from "express";
-import { Pool } from "pg";
+import { Pool, types } from "pg";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -32,6 +32,9 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
+
+// Force node-pg to return timestamp without time zone as string, bypassing local timezone shifts
+types.setTypeParser(1114, str => str);
 
 // Init schema on cold start
 pool.query(`

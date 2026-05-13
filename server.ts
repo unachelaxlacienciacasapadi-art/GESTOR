@@ -1,6 +1,6 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import { Pool } from "pg";
+import { Pool, types } from "pg";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -47,6 +47,9 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
 });
+
+// Force node-pg to return timestamp without time zone as string, bypassing local timezone shifts
+types.setTypeParser(1114, str => str);
 
 // Initialize schema on startup
 const initDb = async () => {

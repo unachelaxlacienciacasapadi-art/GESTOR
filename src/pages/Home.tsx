@@ -19,8 +19,8 @@ import memoriasImg from "../assets/memorias.jpeg";
 
 const TABS = [
   { value: "proximas", label: <span>🎤 Próximas & Comunidad</span> },
-  { value: "galeria",  label: <span>📸 Galería</span>  },
-  { value: "info",     label: <span>ℹ️ Casa Pädi</span>     },
+  { value: "galeria", label: <span>📸 Galería</span> },
+  { value: "info", label: <span>ℹ️ Casa Pädi</span> },
 ];
 
 const safeFormat = (d: string | null | undefined, f: string) => {
@@ -51,10 +51,11 @@ const INFO_CARDS = [
 ];
 
 export default function Home() {
-  const [nextTalk, setNextTalk]         = useState<any>(null);
-  const [upcomingTalks, setUpcoming]    = useState<any[]>([]);
-  const [recentTalks, setRecentTalks]   = useState<any[]>([]);
-  const [subStatus, setSubStatus]       = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [nextTalk, setNextTalk] = useState<any>(null);
+  const [upcomingTalks, setUpcoming] = useState<any[]>([]);
+  const [recentTalks, setRecentTalks] = useState<any[]>([]);
+  const [totalUpcoming, setTotalUpcoming] = useState<number>(0);
+  const [subStatus, setSubStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
 
   useEffect(() => {
     // Next upcoming scheduled talk
@@ -67,13 +68,14 @@ export default function Home() {
           .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
         setNextTalk(scheduled[0] ?? null);
         setUpcoming(scheduled.slice(1, 6));
+        setTotalUpcoming(scheduled.length);
       })
       .catch(console.error);
 
     // Recent completed talks for community tab
-    fetch("/api/talks?limit=4")
+    fetch("/api/talks?status=completed")
       .then(r => r.json())
-      .then(data => setRecentTalks(Array.isArray(data) ? data.slice(0, 4) : []))
+      .then(data => setRecentTalks(Array.isArray(data) ? data : []))
       .catch(console.error);
   }, []);
 
@@ -102,9 +104,9 @@ export default function Home() {
         {/* Background */}
         <div className="absolute inset-0">
           <img src={gale1Img} alt="Hero background" fetchPriority="high" decoding="async" className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 backdrop-blur-[6px] bg-black/65" />
+          <div className="absolute inset-0 backdrop-blur-[2px] bg-black/20" />
           <div className="absolute bottom-0 w-full h-32 bg-gradient-to-b from-transparent to-[#070707]" />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#9933FF]/20 via-transparent to-[#00FFCC]/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#9933FF]/5 via-transparent to-[#00FFCC]/1" />
         </div>
 
         {/* Content */}
@@ -153,19 +155,19 @@ export default function Home() {
             <h3 className="text-2xl font-serif font-bold text-white mb-6 text-center">
               🏛️ Únete a la Comunidad
             </h3>
-            
+
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#00FFCC] mb-2">
                   {recentTalks.length}
                 </div>
-                <p className="text-sm text-[#A0A0A0]">Charlas recientes</p>
+                <p className="text-sm text-[#A0A0A0]">Charlas realizadas</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#FFCC00] mb-2">
-                  {nextTalk ? '1' : '0'}
+                  {totalUpcoming}
                 </div>
-                <p className="text-sm text-[#A0A0A0]">Próxima charla</p>
+                <p className="text-sm text-[#A0A0A0]">Próximas charlas</p>
               </div>
             </div>
 
