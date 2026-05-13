@@ -114,7 +114,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const talkLimiter = rateLimit({ windowMs: 60*60*1000, max: 5, message: { error: "Demasiadas propuestas. Intenta en una hora." }});
 const subscriberLimiter = rateLimit({ windowMs: 60*60*1000, max: 3, message: { error: "Demasiadas suscripciones." }});
-const talkSchema = z.object({ title: z.string().min(5).max(200), abstract: z.string().min(10).max(2000), speaker_name: z.string().min(2).max(100), speaker_bio: z.string().min(10).max(1000), email: z.string().email(), phone: z.string().regex(/^\d{10}$/), _trap: z.string().max(0) });
+const talkSchema = z.object({ title: z.string().min(5).max(200), abstract: z.string().min(10).max(2000), speaker_name: z.string().min(2).max(100), speaker_bio: z.string().min(10).max(1000), email: z.string().email(), phone: z.string().regex(/^\d{10}$/), _trap: z.string().max(0), preferred_date_1: z.string().optional(), preferred_date_2: z.string().optional() });
 const subscriberSchema = z.object({ email: z.string().email() });
 
 // ── Routes ──────────────────────────────────────────────────────────────────
@@ -247,30 +247,6 @@ app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => 
     console.log("POST /api/talks - Recibiendo propuesta...");
     const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs, preferred_date_1, preferred_date_2 } = req.body;
     
-    if (preferred_date_1 && preferred_date_2 && preferred_date_1 === preferred_date_2) {
-      return res.status(400).json({ error: "Las fechas preferidas deben ser diferentes" });
-    }
-
-    if (preferred_date_1 || preferred_date_2) {
-      const datesToCheck: string[] = [];
-      if (preferred_date_1) datesToCheck.push(new Date(preferred_date_1).toISOString().slice(0, 10));
-      if (preferred_date_2) datesToCheck.push(new Date(preferred_date_2).toISOString().slice(0, 10));
-
-      for (const dateStr of datesToCheck) {
-        const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay();
-        if (dayOfWeek !== 3) {
-          return res.status(400).json({ error: `La fecha ${dateStr} no es miércoles. Solo se permiten miércoles.` });
-        }
-        const { rows: blockedRows } = await pool.query(
-          `SELECT id FROM custom_availability WHERE date = $1 AND is_available = false`,
-          [dateStr]
-        );
-        if (blockedRows.length > 0) {
-          return res.status(400).json({ error: `La fecha ${dateStr} no está disponible.` });
-        }
-      }
-    }
-
     let photoUrl = null;
     if (req.file) {
       console.log(`Procesando foto: ${req.file.size} bytes`);
@@ -281,7 +257,7 @@ app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => 
       [title || "", abstract || "", speaker_name || "", speaker_bio || "", photoUrl, email || "", phone || "", social_media || null, technical_needs || null, preferred_date_1 || null, preferred_date_2 || null]
     );
     console.log(`Propuesta guardada con éxito. Folio: #${rows[0].id}`);
-    res.status(201).json({ id: rows[0].id, message: "Talk submitted successfully" });
+    res.json({ success: true, id: rows[0].id });
   } catch (err) { 
     console.error("Error en POST /api/talks:", err); 
     res.status(500).json({ error: "Failed to submit talk" }); 
@@ -426,65 +402,50 @@ app.delete("/api/admin/availability/:id", authenticateToken, async (req, res) =>
 // Endpoint para fechas disponibles (formulario público)
 app.get("/api/available-dates", async (_req, res) => {
   try {
-    // Obtener charlas ya agendadas
     const { rows: scheduled } = await pool.query(
       "SELECT scheduled_date FROM talks WHERE status = 'scheduled' AND scheduled_date >= CURRENT_DATE"
     );
 
     const blockedDates = new Set<string>();
-
-    // Marcar fechas ocupadas
     scheduled.forEach((t: any) => {
       if (t.scheduled_date) {
-        const dateStr = new Date(t.scheduled_date).toISOString().split('T')[0];
-        blockedDates.add(dateStr);
+        const d = new Date(t.scheduled_date);
+        blockedDates.add(d.toISOString().split('T')[0]);
       }
     });
 
-    // Generar miércoles de próximos 3 meses EN TIMEZONE MÉXICO
     const availableDates: { date: string; formatted: string }[] = [];
-    
-    const today = new Date(); // Fecha actual del servidor
-    const threeMonthsLater = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const limit = new Date(today);
+    limit.setMonth(limit.getMonth() + 3);
 
-    let currentDate = new Date(today);
-    
-    while (currentDate <= threeMonthsLater) {
-      // Obtener fecha en México
-      const mxDateString = currentDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
-      const mxDateObj = new Date(mxDateString);
-      const dayOfWeekMX = mxDateObj.getDay();
-      
-      // Solo miércoles (3) y no ocupados
-      if (dayOfWeekMX === 3) {
-        const yyyy = mxDateObj.getFullYear();
-        const mm = String(mxDateObj.getMonth() + 1).padStart(2, '0');
-        const dd = String(mxDateObj.getDate()).padStart(2, '0');
-        const dateStr = `${yyyy}-${mm}-${dd}`;
-        
+    const cur = new Date(today);
+    while (cur <= limit) {
+      if (cur.getDay() === 3) {
+        const dateStr = cur.toISOString().split('T')[0];
         if (!blockedDates.has(dateStr)) {
-          // Fecha a las 19:00 (7 PM) hora México
-          const dateWithTime = dateStr + 'T19:00:00';
-          
+          const withTime = new Date(cur);
+          withTime.setHours(19, 0, 0, 0);
           const formatted = new Intl.DateTimeFormat('es-MX', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-            timeZone: 'UTC'
-          }).format(new Date(dateStr + 'T00:00:00Z')) + ', 7:00 p. m.';
-          
-          availableDates.push({ date: dateWithTime, formatted });
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'America/Mexico_City',
+          }).format(withTime);
+          availableDates.push({ date: dateStr + 'T19:00:00', formatted });
         }
       }
-
-      currentDate.setDate(currentDate.getDate() + 1);
+      cur.setDate(cur.getDate() + 1);
     }
 
     res.json({ availableDates });
   } catch (err) {
-    console.error("Error in /api/available-dates:", err);
-    res.status(500).json({ error: "Failed to fetch available dates", availableDates: [] });
+    console.error(err);
+    res.status(500).json({ error: "Failed", availableDates: [] });
   }
 });
 

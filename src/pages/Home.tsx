@@ -71,12 +71,9 @@ export default function Home() {
       .catch(console.error);
 
     // Recent completed talks for community tab
-    fetch("/api/talks?status=completed&limit=4")
+    fetch("/api/talks?limit=4")
       .then(r => r.json())
-      .then(data => {
-        if ((data as any[]).length > 0) setRecentTalks(data);
-        else fetch("/api/talks?limit=4").then(r => r.json()).then(setRecentTalks);
-      })
+      .then(data => setRecentTalks(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(console.error);
   }, []);
 
