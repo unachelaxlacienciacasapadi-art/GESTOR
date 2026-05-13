@@ -29,6 +29,9 @@ type Talk = {
   event_photos?: string | null;
   category?: string;
   promo_email_sent?: number;
+  flyer_image_url?: string | null;
+  preferred_date_1?: string | null;
+  preferred_date_2?: string | null;
   created_at: string;
 };
 
@@ -233,7 +236,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
         ) : (
           <Calendar
             locale="es-MX"
-            calendarType="ISO 8601"
+            calendarType="gregory"
             onClickDay={handleDateClick}
             tileClassName={getTileClass}
             minDetail="month"
@@ -467,6 +470,7 @@ export default function Admin() {
   const [editCategory, setEditCategory] = useState("");
   const [editSpeakerName, setEditSpeakerName] = useState("");
   const [editSpeakerPhotoUrl, setEditSpeakerPhotoUrl] = useState("");
+  const [editFlyerImageUrl, setEditFlyerImageUrl] = useState("");
   const [editSummary, setEditSummary] = useState("");
   const [editTransmissionUrl, setEditTransmissionUrl] = useState("");
   const [isEditingAll, setIsEditingAll] = useState(false);
@@ -479,6 +483,7 @@ export default function Admin() {
       setEditCategory(selectedTalk.category || "General");
       setEditSpeakerName(selectedTalk.speaker_name || "");
       setEditSpeakerPhotoUrl(selectedTalk.speaker_photo_url || "");
+      setEditFlyerImageUrl(selectedTalk.flyer_image_url || "");
       setEditSummary(selectedTalk.summary || "");
       setEditTransmissionUrl(selectedTalk.transmission_url || "");
       setIsEditingAll(false);
@@ -498,6 +503,15 @@ export default function Admin() {
     });
     setIsSavingDetails(false);
     setIsEditingAll(false);
+  };
+
+  const handleSaveFlyer = async () => {
+    if (!selectedTalk) return;
+    setIsSavingDetails(true);
+    await updateTalk(selectedTalk.id, {
+      flyer_image_url: formatDriveUrl(editFlyerImageUrl)
+    });
+    setIsSavingDetails(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -1083,9 +1097,9 @@ export default function Admin() {
                             <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
                             Flyer Promocional (Opcional)
                           </h3>
-                          {editSpeakerPhotoUrl && selectedTalk?.speaker_photo_url && (
+                          {editFlyerImageUrl && selectedTalk?.flyer_image_url && (
                             <a 
-                              href={selectedTalk.speaker_photo_url} 
+                              href={selectedTalk.flyer_image_url} 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-xs text-[#00FFCC] hover:underline"
@@ -1095,10 +1109,10 @@ export default function Admin() {
                           )}
                         </div>
 
-                        {selectedTalk?.speaker_photo_url && (
+                        {selectedTalk?.flyer_image_url && (
                           <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
                             <img 
-                              src={selectedTalk.speaker_photo_url} 
+                              src={selectedTalk.flyer_image_url} 
                               alt="Flyer preview"
                               className="max-h-64 rounded-lg border border-[#333333] object-contain"
                             />
@@ -1111,8 +1125,8 @@ export default function Admin() {
                           </label>
                           <input
                             type="text"
-                            value={editSpeakerPhotoUrl}
-                            onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)}
+                            value={editFlyerImageUrl}
+                            onChange={(e) => setEditFlyerImageUrl(e.target.value)}
                             placeholder="https://drive.google.com/file/d/... o URL directa"
                             className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
                           />
@@ -1122,115 +1136,7 @@ export default function Admin() {
                         </div>
 
                         <button
-                          onClick={handleSaveDetails}
-                          disabled={isSavingDetails}
-                          className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
-                        >
-                          {isSavingDetails ? "Guardando..." : "Guardar Flyer"}
-                        </button>
-                      </div>
-
-                      {/* Flyer Upload Section */}
-                      <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] space-y-4 mb-6">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
-                            Flyer Promocional (Opcional)
-                          </h3>
-                          {editSpeakerPhotoUrl && selectedTalk?.speaker_photo_url && (
-                            <a 
-                              href={selectedTalk.speaker_photo_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-xs text-[#00FFCC] hover:underline"
-                            >
-                              Ver flyer actual
-                            </a>
-                          )}
-                        </div>
-
-                        {selectedTalk?.speaker_photo_url && (
-                          <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
-                            <img 
-                              src={selectedTalk.speaker_photo_url} 
-                              alt="Flyer preview"
-                              className="max-h-64 rounded-lg border border-[#333333] object-contain"
-                            />
-                          </div>
-                        )}
-
-                        <div>
-                          <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
-                            URL del Flyer (Google Drive, Cloudinary, etc.)
-                          </label>
-                          <input
-                            type="text"
-                            value={editSpeakerPhotoUrl}
-                            onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)}
-                            placeholder="https://drive.google.com/file/d/... o URL directa"
-                            className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
-                          />
-                          <p className="text-xs text-[#A0A0A0] mt-2">
-                            💡 Este flyer se incluirá en el mensaje de WhatsApp. Sube la imagen a Drive/Cloudinary y pega el enlace público aquí.
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={handleSaveDetails}
-                          disabled={isSavingDetails}
-                          className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
-                        >
-                          {isSavingDetails ? "Guardando..." : "Guardar Flyer"}
-                        </button>
-                      </div>
-
-                      {/* Flyer Upload Section */}
-                      <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] space-y-4 mb-6">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
-                            Flyer Promocional (Opcional)
-                          </h3>
-                          {editSpeakerPhotoUrl && selectedTalk?.speaker_photo_url && (
-                            <a 
-                              href={selectedTalk.speaker_photo_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-xs text-[#00FFCC] hover:underline"
-                            >
-                              Ver flyer actual
-                            </a>
-                          )}
-                        </div>
-
-                        {selectedTalk?.speaker_photo_url && (
-                          <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
-                            <img 
-                              src={selectedTalk.speaker_photo_url} 
-                              alt="Flyer preview"
-                              className="max-h-64 rounded-lg border border-[#333333] object-contain"
-                            />
-                          </div>
-                        )}
-
-                        <div>
-                          <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
-                            URL del Flyer (Google Drive, Cloudinary, etc.)
-                          </label>
-                          <input
-                            type="text"
-                            value={editSpeakerPhotoUrl}
-                            onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)}
-                            placeholder="https://drive.google.com/file/d/... o URL directa"
-                            className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
-                          />
-                          <p className="text-xs text-[#A0A0A0] mt-2">
-                            💡 Este flyer se incluirá en el mensaje de WhatsApp. Sube la imagen a Drive/Cloudinary y pega el enlace público aquí.
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={handleSaveDetails}
+                          onClick={handleSaveFlyer}
                           disabled={isSavingDetails}
                           className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
                         >
@@ -1524,6 +1430,32 @@ export default function Admin() {
                               {selectedTalk.speaker_bio}
                             </div>
                           </div>
+
+                          {/* Fechas Preferidas */}
+                          {(selectedTalk.preferred_date_1 || selectedTalk.preferred_date_2) && (
+                            <div>
+                              <h3 className="text-xs font-bold text-[#00FFCC] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-[#00FFCC]" />
+                                Fechas Sugeridas por el Ponente
+                              </h3>
+                              <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#00FFCC]/20 space-y-2">
+                                {selectedTalk.preferred_date_1 && (
+                                  <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
+                                    <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
+                                    <span className="font-medium text-[#00FFCC]">Opción 1:</span>
+                                    <span>{safeFormatDate(selectedTalk.preferred_date_1, "EEEE d 'de' MMMM, yyyy")}</span>
+                                  </div>
+                                )}
+                                {selectedTalk.preferred_date_2 && (
+                                  <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
+                                    <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
+                                    <span className="font-medium text-[#00FFCC]">Opción 2:</span>
+                                    <span>{safeFormatDate(selectedTalk.preferred_date_2, "EEEE d 'de' MMMM, yyyy")}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Contact Info */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

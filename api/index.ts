@@ -42,6 +42,8 @@ pool.query(`
     technical_needs TEXT, transmission_url TEXT, category TEXT DEFAULT 'General',
     promo_email_sent INTEGER DEFAULT 0, status TEXT DEFAULT 'pending',
     scheduled_date TIMESTAMP, summary TEXT, event_photos TEXT,
+    flyer_image_url TEXT, preferred_date_1 TIMESTAMP WITH TIME ZONE,
+    preferred_date_2 TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS subscribers (
@@ -68,6 +70,31 @@ pool.query(`
     phone TEXT, social_media TEXT, notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS custom_availability (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    time TIME NOT NULL DEFAULT '19:00:00',
+    is_available BOOLEAN NOT NULL DEFAULT true,
+    reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(date, time)
+  );
+  CREATE INDEX IF NOT EXISTS idx_custom_availability_date ON custom_availability(date);
+
+  DO $$ 
+  BEGIN
+    BEGIN
+      ALTER TABLE talks ADD COLUMN flyer_image_url TEXT;
+    EXCEPTION WHEN duplicate_column THEN END;
+    BEGIN
+      ALTER TABLE talks ADD COLUMN preferred_date_1 TIMESTAMP WITH TIME ZONE;
+    EXCEPTION WHEN duplicate_column THEN END;
+    BEGIN
+      ALTER TABLE talks ADD COLUMN preferred_date_2 TIMESTAMP WITH TIME ZONE;
+    EXCEPTION WHEN duplicate_column THEN END;
+  END $$;
+
     -- Sync sequences robustly
     DO $$ 
     DECLARE 
@@ -218,15 +245,40 @@ app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => 
     const parsed = talkSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Datos inválidos" });
     console.log("POST /api/talks - Recibiendo propuesta...");
-    const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs } = req.body;
+    const { title, abstract, speaker_name, speaker_bio, email, phone, social_media, technical_needs, preferred_date_1, preferred_date_2 } = req.body;
+    
+    if (preferred_date_1 && preferred_date_2 && preferred_date_1 === preferred_date_2) {
+      return res.status(400).json({ error: "Las fechas preferidas deben ser diferentes" });
+    }
+
+    if (preferred_date_1 || preferred_date_2) {
+      const datesToCheck: string[] = [];
+      if (preferred_date_1) datesToCheck.push(new Date(preferred_date_1).toISOString().slice(0, 10));
+      if (preferred_date_2) datesToCheck.push(new Date(preferred_date_2).toISOString().slice(0, 10));
+
+      for (const dateStr of datesToCheck) {
+        const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay();
+        if (dayOfWeek !== 3) {
+          return res.status(400).json({ error: `La fecha ${dateStr} no es miércoles. Solo se permiten miércoles.` });
+        }
+        const { rows: blockedRows } = await pool.query(
+          `SELECT id FROM custom_availability WHERE date = $1 AND is_available = false`,
+          [dateStr]
+        );
+        if (blockedRows.length > 0) {
+          return res.status(400).json({ error: `La fecha ${dateStr} no está disponible.` });
+        }
+      }
+    }
+
     let photoUrl = null;
     if (req.file) {
       console.log(`Procesando foto: ${req.file.size} bytes`);
       photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     }
     const { rows } = await pool.query(
-      `INSERT INTO talks (title, abstract, speaker_name, speaker_bio, speaker_photo_url, email, phone, social_media, technical_needs) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-      [title || "", abstract || "", speaker_name || "", speaker_bio || "", photoUrl, email || "", phone || "", social_media || null, technical_needs || null]
+      `INSERT INTO talks (title, abstract, speaker_name, speaker_bio, speaker_photo_url, email, phone, social_media, technical_needs, preferred_date_1, preferred_date_2) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
+      [title || "", abstract || "", speaker_name || "", speaker_bio || "", photoUrl, email || "", phone || "", social_media || null, technical_needs || null, preferred_date_1 || null, preferred_date_2 || null]
     );
     console.log(`Propuesta guardada con éxito. Folio: #${rows[0].id}`);
     res.status(201).json({ id: rows[0].id, message: "Talk submitted successfully" });
@@ -309,6 +361,64 @@ app.get("/api/admin/backup", authenticateToken, async (_req, res) => {
     const { rows: contacts } = await pool.query("SELECT * FROM contacts");
     res.json({ talks, subscribers, contacts, export_date: new Date() });
   } catch (err) { console.error(err); res.status(500).json({ error: "Failed to generate backup" }); }
+});
+
+// Endpoints de Disponibilidad
+
+app.post("/api/admin/availability", authenticateToken, async (req, res) => {
+  try {
+    const { date, time, is_available, reason } = req.body;
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: "Formato de fecha inválido. Usa YYYY-MM-DD" });
+    }
+    const timeToUse = time || "19:00:00";
+    if (!/^\d{2}:\d{2}(:\d{2})?$/.test(timeToUse)) {
+      return res.status(400).json({ error: "Formato de hora inválido. Usa HH:MM o HH:MM:SS" });
+    }
+
+    const { rows } = await pool.query(
+      `INSERT INTO custom_availability (date, time, is_available, reason)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (date, time) DO UPDATE
+         SET is_available = EXCLUDED.is_available,
+             reason = EXCLUDED.reason,
+             updated_at = NOW()
+       RETURNING *`,
+      [date, timeToUse, is_available !== undefined ? is_available : true, reason || null]
+    );
+    res.status(201).json({ success: true, availability: rows[0] });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create availability exception" });
+  }
+});
+
+app.get("/api/admin/availability", authenticateToken, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || null;
+    let query = "SELECT * FROM custom_availability ORDER BY date ASC, time ASC";
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    const { rows } = await pool.query(query);
+    res.json({ availability: rows });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch availability exceptions" });
+  }
+});
+
+app.delete("/api/admin/availability/:id", authenticateToken, async (req, res) => {
+  try {
+    const { rowCount } = await pool.query("DELETE FROM custom_availability WHERE id = $1", [req.params.id]);
+    if (rowCount === 0) {
+      return res.status(404).json({ error: "Excepción no encontrada" });
+    }
+    res.json({ success: true, message: "Excepción eliminada correctamente" });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete availability exception" });
+  }
 });
 
 // Endpoint para fechas disponibles (formulario público)
