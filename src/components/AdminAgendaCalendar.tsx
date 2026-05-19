@@ -14,6 +14,14 @@ type Talk = {
   status: "pending" | "approved" | "rejected" | "scheduled" | "completed";
   scheduled_date: string | null;
   category?: string;
+  description_short?: string | null;
+  institution?: string | null;
+  speaker_2_name?: string | null;
+  speaker_2_photo_url?: string | null;
+  speaker_2_bio?: string | null;
+  transmission_url?: string | null;
+  facebook_url?: string | null;
+  admin_notes?: string | null;
 };
 
 type Props = {
@@ -46,6 +54,17 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
   const [editTime, setEditTime] = useState("");
   const [editDate, setEditDate] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [activeModalTab, setActiveModalTab] = useState("charla");
+  const [editDescShort, setEditDescShort] = useState("");
+  const [editAbstract, setEditAbstract] = useState("");
+  const [editInstitution, setEditInstitution] = useState("");
+  const [editSpeakerBio, setEditSpeakerBio] = useState("");
+  const [editSpeaker2Name, setEditSpeaker2Name] = useState("");
+  const [editSpeaker2Photo, setEditSpeaker2Photo] = useState("");
+  const [editSpeaker2Bio, setEditSpeaker2Bio] = useState("");
+  const [editTransmission, setEditTransmission] = useState("");
+  const [editFacebook, setEditFacebook] = useState("");
+  const [editAdminNotes, setEditAdminNotes] = useState("");
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -114,6 +133,17 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     setEditPhotoUrl(talk.speaker_photo_url || "");
     setEditTime(safeFormatDate(talk.scheduled_date, "HH:mm"));
     setEditDate(safeFormatDate(talk.scheduled_date, "yyyy-MM-dd"));
+    setEditDescShort(talk.description_short || "");
+    setEditAbstract(talk.abstract || "");
+    setEditInstitution(talk.institution || "");
+    setEditSpeakerBio(talk.speaker_bio || "");
+    setEditSpeaker2Name(talk.speaker_2_name || "");
+    setEditSpeaker2Photo(talk.speaker_2_photo_url || "");
+    setEditSpeaker2Bio(talk.speaker_2_bio || "");
+    setEditTransmission(talk.transmission_url || "");
+    setEditFacebook(talk.facebook_url || "");
+    setEditAdminNotes(talk.admin_notes || "");
+    setActiveModalTab("charla");
     setShowEditModal(true);
   };
 
@@ -154,6 +184,16 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
       category: editCategory,
       speaker_name: editSpeakerName,
       speaker_photo_url: formatDriveUrl(editPhotoUrl),
+      description_short: editDescShort,
+      abstract: editAbstract,
+      institution: editInstitution,
+      speaker_bio: editSpeakerBio,
+      speaker_2_name: editSpeaker2Name,
+      speaker_2_photo_url: editSpeaker2Photo,
+      speaker_2_bio: editSpeaker2Bio,
+      transmission_url: editTransmission,
+      facebook_url: editFacebook,
+      admin_notes: editAdminNotes,
     };
 
     if (editDate && editTime) {
@@ -361,70 +401,165 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               </button>
             </div>
             
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Fecha</label>
-                  <input 
-                    type="date" 
-                    value={editDate} 
-                    onChange={(e) => setEditDate(e.target.value)} 
-                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] focus:border-[#9933FF] outline-none text-white text-sm" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
-                  <input 
-                    type="time" 
-                    value={editTime} 
-                    onChange={(e) => setEditTime(e.target.value)} 
-                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] focus:border-[#9933FF] outline-none text-white text-sm" 
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de la Charla</label>
-                <input 
-                  type="text" 
-                  value={editTitle} 
-                  onChange={(e) => setEditTitle(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" 
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Categoría</label>
-                  <input 
-                    type="text" 
-                    value={editCategory} 
-                    onChange={(e) => setEditCategory(e.target.value)} 
-                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Artista / Ponente</label>
-                  <input 
-                    type="text" 
-                    value={editSpeakerName} 
-                    onChange={(e) => setEditSpeakerName(e.target.value)} 
-                    className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" 
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Enlace de Drive / URL de Póster</label>
-                <input 
-                  type="text" 
-                  value={editPhotoUrl} 
-                 onChange={(e) => setEditPhotoUrl(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl text-white text-sm font-mono text-xs" 
-                 placeholder="Pegar enlace de Google Drive o URL..."
-                />
+            <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+              {/* Tab Bar */}
+              <div className="flex gap-1 bg-[#0A0A0A] p-1 rounded-xl border border-[#333333]">
+                {[
+                  { value: "charla", label: "📋 Charla" },
+                  { value: "ponentes", label: "🎤 Ponentes" },
+                  { value: "multimedia", label: "🎬 Multimedia" },
+                  { value: "notas", label: "⚙️ Notas" },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveModalTab(tab.value)}
+                    className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      activeModalTab === tab.value
+                        ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]"
+                        : "text-[#A0A0A0] hover:text-white"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              <div className="pt-4 border-t border-[#333333] flex justify-between items-center mt-6">
-                <button 
-                  type="button" 
+              {/* TAB 1: CHARLA */}
+              {activeModalTab === "charla" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Fecha</label>
+                      <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
+                      <input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de la Charla</label>
+                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Descripción Corta (máx. 150 caracteres)</label>
+                    <textarea maxLength={150} rows={2} value={editDescShort} onChange={(e) => setEditDescShort(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Descripción Completa</label>
+                    <textarea rows={4} value={editAbstract} onChange={(e) => setEditAbstract(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Categoría</label>
+                      <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm appearance-none">
+                        <option>General</option>
+                        <option>Ciencias Sociales</option>
+                        <option>Deportes y Género</option>
+                        <option>Ciencias Naturales</option>
+                        <option>Arte y Cultura</option>
+                        <option>Tecnología</option>
+                        <option>Historia</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Institución / Afiliación</label>
+                      <input type="text" value={editInstitution} onChange={(e) => setEditInstitution(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PONENTES */}
+              {activeModalTab === "ponentes" && (
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-[#9933FF] uppercase tracking-wider">Ponente Principal</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre</label>
+                      <input type="text" value={editSpeakerName} onChange={(e) => setEditSpeakerName(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Foto (URL Drive/Cloudinary)</label>
+                      <input type="text" placeholder="https://..." value={editPhotoUrl} onChange={(e) => setEditPhotoUrl(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
+                    <textarea maxLength={300} rows={3} value={editSpeakerBio} onChange={(e) => setEditSpeakerBio(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                  </div>
+                  <hr className="border-white/10" />
+                  <p className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
+                    Segundo Ponente <span className="text-[10px] normal-case font-normal">(opcional)</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre</label>
+                      <input type="text" value={editSpeaker2Name} onChange={(e) => setEditSpeaker2Name(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Foto (URL)</label>
+                      <input type="text" placeholder="https://..." value={editSpeaker2Photo} onChange={(e) => setEditSpeaker2Photo(e.target.value)}
+                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
+                    <textarea maxLength={300} rows={3} value={editSpeaker2Bio} onChange={(e) => setEditSpeaker2Bio(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: MULTIMEDIA */}
+              {activeModalTab === "multimedia" && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Enlace Drive / URL Póster</label>
+                    <input type="text" placeholder="https://drive.google.com/..." value={editPhotoUrl} onChange={(e) => setEditPhotoUrl(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Video / Transmisión (YouTube u otro)</label>
+                    <input type="text" placeholder="https://youtube.com/..." value={editTransmission} onChange={(e) => setEditTransmission(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Facebook Live (opcional)</label>
+                    <input type="text" placeholder="https://facebook.com/..." value={editFacebook} onChange={(e) => setEditFacebook(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: NOTAS */}
+              {activeModalTab === "notas" && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Notas Internas (solo visibles para admin)</label>
+                    <textarea rows={7} value={editAdminNotes} onChange={(e) => setEditAdminNotes(e.target.value)}
+                      placeholder="Requerimientos técnicos, acuerdos con el ponente, observaciones de logística..."
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                  </div>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="pt-4 border-t border-[#333333] flex justify-between items-center">
+                <button
+                  type="button"
                   onClick={() => handleDelete(editingTalk.id)}
                   className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#FF3366] bg-[#FF3366]/10 hover:bg-[#FF3366]/20 rounded-xl transition-colors"
                 >
@@ -432,22 +567,22 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                 </button>
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cancelar</button>
-                  <button 
-                    type="submit" 
-                    disabled={isSavingEdit} 
+                  <button
+                    type="button"
+                    onClick={handleEditSubmit as any}
+                    disabled={isSavingEdit}
                     className="bg-[#9933FF] text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#7A29CC] disabled:opacity-50 flex items-center gap-2"
                   >
-                    {isSavingEdit && (
-                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    )}
+                    {isSavingEdit && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                     {isSavingEdit ? "Guardando..." : "Guardar Cambios"}
                   </button>
                 </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

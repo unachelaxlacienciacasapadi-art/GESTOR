@@ -130,25 +130,20 @@ const initDb = async () => {
       );
     `);
 
-    // Add preferred_date columns to talks if they don't exist yet
+    // Add columns to talks if they don't exist yet
     await pool.query(`
-      DO $$
-      BEGIN
-        ALTER TABLE talks ADD COLUMN preferred_date_1 TIMESTAMP WITH TIME ZONE;
-      EXCEPTION WHEN duplicate_column THEN END;
-      BEGIN
-        ALTER TABLE talks ADD COLUMN preferred_date_2 TIMESTAMP WITH TIME ZONE;
-      EXCEPTION WHEN duplicate_column THEN END;
-      BEGIN
-        ALTER TABLE talks ADD COLUMN stream_url TEXT;
-      EXCEPTION WHEN duplicate_column THEN END;
-      BEGIN
-        ALTER TABLE talks ADD COLUMN recap_summary TEXT;
-      EXCEPTION WHEN duplicate_column THEN END;
-      BEGIN
-        ALTER TABLE talks ADD COLUMN recap_photos TEXT DEFAULT '[]';
-      EXCEPTION WHEN duplicate_column THEN END;
-      END $$;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS preferred_date_1 TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS preferred_date_2 TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS stream_url TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS recap_summary TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS recap_photos TEXT DEFAULT '[]';
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS description_short TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS speaker_2_name TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS speaker_2_photo_url TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS speaker_2_bio TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS facebook_url TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+      ALTER TABLE talks ADD COLUMN IF NOT EXISTS institution TEXT;
     `);
 
     // Create index for custom_availability if it doesn't exist
@@ -395,7 +390,18 @@ app.post("/api/talks", upload.single("photo"), async (req, res) => {
 app.patch("/api/talks/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const allowedFields = ["title", "abstract", "speaker_name", "speaker_bio", "speaker_photo_url", "email", "phone", "social_media", "technical_needs", "transmission_url", "category", "promo_email_sent", "status", "scheduled_date", "summary", "event_photos", "flyer_image_url", "preferred_date_1", "preferred_date_2", "stream_url", "recap_summary", "recap_photos"];
+    const allowedFields = [
+      // Campos existentes
+      "title", "abstract", "speaker_name", "speaker_bio", "speaker_photo_url",
+      "email", "phone", "social_media", "technical_needs", "transmission_url",
+      "category", "promo_email_sent", "status", "scheduled_date", "summary",
+      "event_photos", "flyer_image_url", "preferred_date_1", "preferred_date_2",
+      "stream_url", "recap_summary", "recap_photos",
+      // Campos nuevos
+      "description_short",
+      "speaker_2_name", "speaker_2_photo_url", "speaker_2_bio",
+      "facebook_url", "admin_notes", "institution"
+    ];
     const updates: any = {};
     for (const key of Object.keys(req.body)) {
       if (allowedFields.includes(key)) updates[key] = req.body[key];

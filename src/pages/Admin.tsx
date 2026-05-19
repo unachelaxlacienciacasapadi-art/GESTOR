@@ -1038,7 +1038,7 @@ export default function Admin() {
                       if (listFilter === "completed") return talk.status === "completed";
                       return true;
                     })
-                    .map((talk) => (
+                    .map((talk, index) => (
                     <button
                       key={talk.id}
                       onClick={() => setSelectedTalk(talk)}
@@ -1046,9 +1046,24 @@ export default function Admin() {
                         "w-full text-left p-4 rounded-xl transition-all border",
                         selectedTalk?.id === talk.id
                           ? "bg-[#9933FF]/10 border-[#9933FF]/50 shadow-sm"
-                          : "bg-[#0A0A0A] border-transparent hover:border-[#333333] hover:bg-[#1A1A1A]"
+                          : activeTab === "design" && index === 0 && talk.status === "scheduled"
+                            ? "bg-[#0A0A0A] border-l-4 border-l-green-500 border-t-transparent border-r-transparent border-b-transparent hover:bg-[#1A1A1A]"
+                            : "bg-[#0A0A0A] border-transparent hover:border-[#333333] hover:bg-[#1A1A1A]"
                       )}
                     >
+                      {activeTab === "design" && index === 0 && talk.status === "scheduled" && (
+                        <span style={{
+                          fontSize: '10px',
+                          color: '#4ade80',
+                          fontWeight: 'bold',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          display: 'block',
+                          marginBottom: '2px'
+                        }}>
+                          ● Próxima
+                        </span>
+                      )}
                       <div className="flex justify-between items-start mb-2">
                         <span className={cn(
                           "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
