@@ -8,6 +8,9 @@ import { Pool, types } from "pg";
 // Pool único compartido por todo el backend. Tanto el entry point serverless
 // (api/index.ts) como el dev server (server.ts) importan este módulo, por lo
 // que existe una sola configuración de conexión y un solo esquema.
+if (!process.env.DATABASE_URL) {
+  console.warn("WARNING: DATABASE_URL environment variable is not defined. Database operations will fail.");
+}
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -153,4 +156,6 @@ export const initDb = async (): Promise<void> => {
 // Dispara la inicialización al cargar el módulo (fire-and-forget), replicando el
 // comportamiento de cold start de producción. Como ambos entry points importan
 // este módulo (vía app.ts), el esquema se inicializa idéntico en dev y prod.
-void initDb();
+initDb().catch(err => {
+  console.error("Database initialization error (will retry on first request):", err.message);
+});
