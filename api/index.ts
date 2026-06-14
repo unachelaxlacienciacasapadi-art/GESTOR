@@ -1,5 +1,5 @@
-import "../server/env";
-import app from "../server/app";
+import "./server/env";
+import app from "./server/app";
 
 // Punto de entrada serverless de Vercel.
 // Toda la lógica de rutas vive en server/app.ts (fuente única compartida con el

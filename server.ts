@@ -1,7 +1,7 @@
-import "./server/env";
+import "./api/server/env";
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import app from "./server/app";
+import app from "./api/server/app";
 
 // Punto de entrada de DESARROLLO (npm run dev → tsx server.ts).
 // Reutiliza el `app` de Express compartido (server/app.ts) — misma lógica de

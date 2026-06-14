@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { pool } from "./db";
 import { authenticateToken, JWT_SECRET } from "./auth";
 import { talkSchema, subscriberSchema } from "./validation";
-import { sendConfirmationEmail } from "../src/lib/email";
+import { sendConfirmationEmail } from "../../src/lib/email";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App Express compartida — ÚNICA fuente de verdad de las rutas del backend.
