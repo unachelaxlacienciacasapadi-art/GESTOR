@@ -9,4 +9,3 @@ coverage/
 *.db
 *.sqlite
 uploads/
-api/index.js
