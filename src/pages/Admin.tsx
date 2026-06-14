@@ -10,30 +10,7 @@ import AdminAgendaCalendar from "../components/AdminAgendaCalendar";
 import AdminCarteleraPreview from "../components/AdminCarteleraPreview";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-
-type Talk = {
-  id: number;
-  title: string;
-  abstract: string;
-  speaker_name: string;
-  speaker_bio: string;
-  speaker_photo_url: string | null;
-  email?: string;
-  phone?: string;
-  social_media?: string;
-  technical_needs?: string;
-  status: "pending" | "approved" | "rejected" | "scheduled" | "completed";
-  scheduled_date: string | null;
-  summary?: string | null;
-  transmission_url?: string | null;
-  event_photos?: string | null;
-  category?: string;
-  promo_email_sent?: number;
-  flyer_image_url?: string | null;
-  preferred_date_1?: string | null;
-  preferred_date_2?: string | null;
-  created_at: string;
-};
+import { Talk } from "../types/talk";
 
 const AvailabilityManager = ({ token }: { token: string }) => {
   const [exceptions, setExceptions] = useState<any[]>([]);

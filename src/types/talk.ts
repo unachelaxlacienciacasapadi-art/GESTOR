@@ -1,0 +1,33 @@
+export interface Talk {
+  id: number;
+  title: string;
+  created_at: string;
+  abstract?: string;
+  speaker_name?: string;
+  speaker_bio?: string;
+  speaker_photo_url?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  social_media?: string | null;
+  technical_needs?: string | null;
+  transmission_url?: string | null;
+  category?: string;
+  promo_email_sent?: number;
+  status?: "pending" | "approved" | "rejected" | "scheduled" | "completed";
+  scheduled_date?: string | null;
+  summary?: string | null;
+  event_photos?: string | null;
+  flyer_image_url?: string | null;
+  preferred_date_1?: string | null;
+  preferred_date_2?: string | null;
+  stream_url?: string | null;
+  recap_summary?: string | null;
+  recap_photos?: string | null;
+  description_short?: string | null;
+  speaker_2_name?: string | null;
+  speaker_2_photo_url?: string | null;
+  speaker_2_bio?: string | null;
+  facebook_url?: string | null;
+  admin_notes?: string | null;
+  institution?: string | null;
+}

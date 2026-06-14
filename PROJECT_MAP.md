@@ -26,6 +26,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 *   **Componentes:** `AdminAgendaCalendar`, `WhatsAppShareButton` 🆕, `react-calendar`, `lucide-react`.
 *   **Endpoints:**
     *   `GET /api/talks` (con filtros de estado) ✅
+    *   `POST /api/admin/talks` (creación de charlas desde admin, autenticado) ✅
     *   `PATCH /api/talks/:id` (incluyendo actualización de `flyer_image_url`) ✅
     *   `GET /api/available-dates` (lógica simplificada) ✅
     *   `GET /api/subscribers`, `GET /api/contacts` ✅
@@ -38,8 +39,14 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 
 ## 🏗️ Infraestructura del Backend (`server.ts`)
 
-### ⚙️ Servidor y API (`server.ts` / `api/index.ts`) ✅
-*   **Vercel Entry Point:** `api/index.ts`.
+### ⚙️ Arquitectura Modular Backend ✅
+*   **server/env.ts** — Carga variables de entorno (dotenv).
+*   **server/db.ts** — Pool PostgreSQL + función `initDb()` para inicializar esquema.
+*   **server/auth.ts** — Middleware JWT (`authenticateToken`) y constante `JWT_SECRET`.
+*   **server/validation.ts** — Schemas Zod para validación (`talkSchema`, `subscriberSchema`).
+*   **server/app.ts** — ÚNICA fuente de verdad de todas las rutas (~550 líneas). Exporta `app` Express.
+*   **server.ts** — Wrapper de desarrollo: monta Vite HMR + estáticos + llama `listen()`.
+*   **api/index.ts** — Wrapper de producción Vercel (~8 líneas): importa y exporta `app`.
 *   **Lógica de Fechas:** Endpoint `/api/available-dates` simplificado para eliminar dependencia de tablas externas, calculando dinámicamente los miércoles y cruzando con charlas agendadas en la tabla `talks`.
 *   **Timezone:** Cálculos forzados a `America/Mexico_City` para evitar desfases UTC. Backend y frontend sincronizados para garantizar la visualización de las 19:00 hrs. ✅
 
@@ -50,7 +57,7 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 *   `topic_suggestions`: Ideas de la comunidad y votos.
 *   `feedback`: Calificaciones de las charlas.
 *   `contacts`: Directorio de artistas y proveedores.
-*   `custom_availability`: (Depreciado/Opcional) Antiguo sistema de excepciones, actualmente la lógica es dinámica.
+*   `custom_availability`: Sistema de excepciones personalizadas de disponibilidad (activo).
 
 ---
 
@@ -59,6 +66,20 @@ Este documento visualiza las dependencias entre páginas, componentes, endpoints
 ### 🟢 `WhatsAppShareButton.tsx` 🆕
 *   Genera mensajes dinámicos con título, ponente, fecha, hora y enlace al flyer.
 *   Integrado en: `NextTalkCard`, `UpcomingTalksCarousel`, `Cartelera` y `Admin`.
+
+---
+
+## 📋 Último Refactor Backend (2026-06-14)
+
+Unificación de la lógica backend en `server/app.ts` como fuente única de verdad. Consolidación de:
+- Rutas de CRUD (talks, subscribers, contacts, feedback)
+- Endpoints administrativos (login, creación de charlas autenticada, gestión de disponibilidad)
+- Endpoints públicos (cartelera, registro, fechas disponibles, check-in, pasaporte)
+- Validaciones Zod centralizadas
+- Middleware de autenticación JWT
+- Rate limiters anti-abuso
+
+Resultado: ~550 líneas en `app.ts`, separadas en 11 secciones temáticas, con mantainability mejorada y cero redundancia.
 
 ---
 

@@ -3,8 +3,8 @@ import { es } from "date-fns/locale";
 
 interface TalkForShare {
   title: string;
-  speaker_name: string;
-  scheduled_date: string | null;
+  speaker_name?: string;
+  scheduled_date?: string | null;
   abstract?: string;
   category?: string;
   flyer_image_url?: string | null;

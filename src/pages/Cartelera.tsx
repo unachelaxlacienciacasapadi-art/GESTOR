@@ -3,22 +3,7 @@ import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMo
 import { es } from "date-fns/locale";
 import { Calendar, MapPin, Clock, Image as ImageIcon, X, ChevronLeft, ChevronRight, MonitorPlay } from "lucide-react";
 import WhatsAppShareButton from "../components/WhatsAppShareButton";
-
-type Talk = {
-  id: number;
-  title: string;
-  abstract: string;
-  speaker_name: string;
-  speaker_bio: string;
-  speaker_photo_url: string | null;
-  status: "pending" | "approved" | "rejected" | "scheduled" | "completed";
-  scheduled_date: string | null;
-  category?: string;
-  summary?: string | null;
-  transmission_url?: string | null;
-  event_photos?: string | null;
-  created_at: string;
-};
+import { Talk } from "../types/talk";
 
 export default function Cartelera() {
   const [upcoming, setUpcoming] = useState<Talk[]>([]);

@@ -3,26 +3,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, Save, X, Edit3, Clock } from "lucide-react";
 import { formatDriveUrl } from "../lib/utils";
-
-type Talk = {
-  id: number;
-  title: string;
-  abstract: string;
-  speaker_name: string;
-  speaker_bio: string;
-  speaker_photo_url: string | null;
-  status: "pending" | "approved" | "rejected" | "scheduled" | "completed";
-  scheduled_date: string | null;
-  category?: string;
-  description_short?: string | null;
-  institution?: string | null;
-  speaker_2_name?: string | null;
-  speaker_2_photo_url?: string | null;
-  speaker_2_bio?: string | null;
-  transmission_url?: string | null;
-  facebook_url?: string | null;
-  admin_notes?: string | null;
-};
+import { Talk } from "../types/talk";
 
 type Props = {
   talks: Talk[];

@@ -3,21 +3,7 @@ import { parseISO, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Clock, MapPin, MonitorPlay, Calendar, Edit3, X, Save } from "lucide-react";
 import { formatDriveUrl } from "../lib/utils";
-
-type Talk = {
-  id: number;
-  title: string;
-  abstract: string;
-  speaker_name: string;
-  speaker_bio: string;
-  speaker_photo_url: string | null;
-  status: "pending" | "approved" | "rejected" | "scheduled" | "completed";
-  scheduled_date: string | null;
-  category?: string;
-  summary?: string | null;
-  transmission_url?: string | null;
-  created_at: string;
-};
+import { Talk } from "../types/talk";
 
 type Props = {
   talks: Talk[];
