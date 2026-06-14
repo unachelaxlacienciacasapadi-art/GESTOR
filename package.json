@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "build:api": "esbuild api/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --external:pg-native"
+    "build:server": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
