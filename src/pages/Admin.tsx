@@ -399,6 +399,7 @@ export default function Admin() {
   const [subscribers, setSubscribers] = useState<{ id: number, email: string, created_at: string }[]>([]);
   const [contacts, setContacts] = useState<{ id: number, name: string, type: string, contact_person: string, phone: string, social_media: string, notes: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedTalk, setSelectedTalk] = useState<Talk | null>(null);
   const [activeTab, setActiveTab] = useState<"list" | "agenda" | "design" | "dashboard" | "availability">("dashboard");
 
@@ -625,15 +626,25 @@ export default function Admin() {
   const fetchTalks = async () => {
     try {
       const res = await fetch("/api/talks?includeAll=true");
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setTalks(data);
-      } else {
-        console.error("Expected array of talks, got:", data);
+      if (!res.ok) {
+        const body = await res.text();
+        console.error(`fetchTalks: HTTP ${res.status}`, body);
+        setFetchError(`Error ${res.status} al cargar charlas: ${body}`);
         setTalks([]);
+        return;
       }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        console.error("fetchTalks: expected array, got:", data);
+        setFetchError("Respuesta inesperada del servidor al cargar charlas.");
+        setTalks([]);
+        return;
+      }
+      setFetchError(null);
+      setTalks(data);
     } catch (error) {
       console.error("Failed to fetch talks", error);
+      setFetchError("No se pudo conectar al servidor para cargar las charlas.");
       setTalks([]);
     } finally {
       setLoading(false);
@@ -699,11 +710,15 @@ export default function Admin() {
 
   const createTalk = async (talkData: Partial<Talk>) => {
     try {
-      await fetch(`/api/talks`, {
+      const res = await fetch(`/api/admin/talks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
+        },
         body: JSON.stringify(talkData),
       });
+      if (res.status === 401 || res.status === 403) return handleLogout();
       fetchTalks();
     } catch (error) {
       console.error("Failed to create talk", error);
@@ -712,41 +727,36 @@ export default function Admin() {
 
   // Filter talks based on active tab
   const filteredTalks = talks.filter(talk => {
-    if (activeTab === "list") return true; // Mostrar todas las charlas
-    if (activeTab === "calendar") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
+    if (activeTab === "list") return true;
     if (activeTab === "design") return talk.status === "scheduled" || talk.status === "completed";
     if (activeTab === "agenda") return talk.status === "approved" || talk.status === "scheduled" || talk.status === "completed";
-    if (activeTab === "dashboard" || activeTab === "contacts") return false;
+    if (activeTab === "dashboard") return false;
     return true;
   });
 
-  if (activeTab === "calendar" || activeTab === "design" || activeTab === "agenda") {
+  if (activeTab === "design" || activeTab === "agenda") {
     filteredTalks.sort((a, b) => new Date(a.scheduled_date || Date.now() * 2).getTime() - new Date(b.scheduled_date || Date.now() * 2).getTime());
   }
 
   // Handle tab change
-  const handleTabChange = (tab: "list" | "calendar" | "design" | "dashboard" | "agenda" | "contacts" | "availability", keepSelection = false) => {
-    setActiveTab(tab as any);
+  const handleTabChange = (tab: "list" | "design" | "dashboard" | "agenda" | "availability", keepSelection = false) => {
+    setActiveTab(tab);
     if (!keepSelection) {
       setSelectedTalk(null); // Reset selection when changing tabs to avoid confusion
     }
   };
 
   const getPlaceholderText = () => {
-    if (activeTab === "calendar") return "Elige una charla aprobada de la lista para asignarle una fecha y hora.";
     if (activeTab === "design") return "Elige una charla agendada de la lista para generar su póster promocional.";
     if (activeTab === "dashboard") return "Visualiza las métricas y suscriptores de la comunidad.";
     if (activeTab === "agenda") return "Visualiza y edita la cartelera general.";
-    if (activeTab === "contacts") return "Directorio de contactos y artistas.";
     return "Elige una charla de la lista para ver sus detalles y gestionarla.";
   };
 
   const getPlaceholderTitle = () => {
-    if (activeTab === "calendar") return "Agendar Charla";
     if (activeTab === "design") return "Generar Diseño";
     if (activeTab === "dashboard") return "Dashboard";
     if (activeTab === "agenda") return "Agenda General";
-    if (activeTab === "contacts") return "Contactos";
     return "Selecciona una propuesta";
   };
 
@@ -885,6 +895,12 @@ export default function Admin() {
           </button>
         </div>
       </div>
+
+      {fetchError && (
+        <div className="mb-4 px-4 py-3 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 text-sm font-medium">
+          {fetchError}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {activeTab === "dashboard" ? (
@@ -1618,7 +1634,6 @@ export default function Admin() {
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#9933FF] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
                   <div className="w-16 h-16 bg-[#0A0A0A] border border-[#333333] rounded-full flex items-center justify-center text-[#9933FF] mb-5 relative z-10">
                     {activeTab === "list" && <Coffee className="w-8 h-8" />}
-                    {activeTab === "agenda" && <CalendarIcon className="w-8 h-8" />}
                     {activeTab === "design" && <ImageIcon className="w-8 h-8" />}
                   </div>
                   <h2 className="text-xl font-serif font-bold text-white mb-2 relative z-10">{getPlaceholderTitle()}</h2>

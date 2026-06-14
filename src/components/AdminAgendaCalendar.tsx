@@ -42,7 +42,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
   const [editingTalk, setEditingTalk] = useState<Talk | null>(null);
 
   // Forms state
-  const [selectedPendingTalk, setSelectedPendingTalk] = useState<number | "NEW">("");
+  const [selectedPendingTalk, setSelectedPendingTalk] = useState<number | "NEW" | null>(null);
   const [newTalkTitle, setNewTalkTitle] = useState("");
   const [newTalkSpeaker, setNewTalkSpeaker] = useState("");
   const [timeInput, setTimeInput] = useState("18:00");
@@ -114,7 +114,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     const dayTalks = getTalksForDay(date);
     if (dayTalks.length === 0) {
       // Abre modal de crear/asignar
-      setSelectedPendingTalk("");
+      setSelectedPendingTalk(null);
       setNewTalkTitle("");
       setNewTalkSpeaker("");
       setTimeInput("18:00");
@@ -335,10 +335,10 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
 
               <div>
                 <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Asignar una Charla Existente</label>
-                <select 
+                <select
                   className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl text-white text-sm outline-none focus:border-[#00FFCC]"
-                  value={selectedPendingTalk}
-                  onChange={(e) => setSelectedPendingTalk(e.target.value === "NEW" ? "NEW" : Number(e.target.value))}
+                  value={selectedPendingTalk ?? ""}
+                  onChange={(e) => setSelectedPendingTalk(e.target.value === "" ? null : e.target.value === "NEW" ? "NEW" : Number(e.target.value))}
                 >
                   <option value="" disabled>-- Selecciona una propuesta --</option>
                   <option value="NEW">+ Añadir Evento Vacío Temporal</option>
