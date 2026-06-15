@@ -62,7 +62,7 @@ export default function Home() {
 
   useEffect(() => {
     // Next upcoming scheduled talk
-    fetch("/api/talks")
+    fetch("/api/talks?includeAll=true")
       .then(r => r.json())
       .then(data => {
         const now = Date.now();
