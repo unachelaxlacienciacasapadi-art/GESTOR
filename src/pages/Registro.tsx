@@ -110,7 +110,7 @@ export default function Registro() {
       return;
     }
 
-    if (new Date(p1) > new Date(p2)) {
+    if (p1.split("T")[0] > p2.split("T")[0]) {
       alert("La primera opción de fecha debe ser anterior a la segunda (por orden cronológico).");
       setIsSubmitting(false);
       return;

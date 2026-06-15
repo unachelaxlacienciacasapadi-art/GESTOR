@@ -82,8 +82,9 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     return talks.filter(talk => {
       if ((talk.status !== "scheduled" && talk.status !== "completed") || !talk.scheduled_date) return false;
       try {
-        const parsed = parseISO(talk.scheduled_date);
-        return isSameDay(parsed, date);
+        const normalized = talk.scheduled_date.replace(" ", "T");
+        const dateOnly = normalized.includes("T") ? normalized.split("T")[0] : normalized;
+        return isSameDay(parseISO(dateOnly), date);
       } catch (e) {
         return false;
       }
