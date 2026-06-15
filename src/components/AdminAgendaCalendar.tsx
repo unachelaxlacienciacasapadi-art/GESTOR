@@ -289,7 +289,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               })}
               
               {/* Padding empty cells end — complemento ISO 8601 */}
-              {Array.from({ length: (7 - ((daysInMonth[daysInMonth.length - 1].getDay() + 6) % 7 + 1)) % 7 }).map((_, i) => (
+              {Array.from({ length: (7 - ((daysInMonth[daysInMonth.length - 1].getDay() + 6) % 7)) % 7 }).map((_, i) => (
                 <div key={`empty-end-${i}`} className="bg-[#141414] min-h-[140px]" />
               ))}
             </div>
