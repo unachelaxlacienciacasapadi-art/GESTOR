@@ -57,6 +57,8 @@ export default function Home() {
   const [totalUpcoming, setTotalUpcoming] = useState<number>(0);
   const [subStatus, setSubStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [selectedTalk, setSelectedTalk] = useState<any>(null);
+  const [completedCount, setCompletedCount] = useState<number>(0);
+  const [scheduledCount, setScheduledCount] = useState<number>(0);
 
   useEffect(() => {
     // Next upcoming scheduled talk
@@ -70,6 +72,8 @@ export default function Home() {
         setNextTalk(scheduled[0] ?? null);
         setUpcoming(scheduled.slice(1, 6));
         setTotalUpcoming(scheduled.length);
+        setCompletedCount((data as any[]).filter(t => t.status === "completed").length);
+        setScheduledCount((data as any[]).filter(t => t.status === "scheduled").length);
       })
       .catch(console.error);
 
@@ -161,16 +165,13 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#00FFCC] mb-2">
-                  {recentTalks.filter(t => 
-                    t.status === 'completed' || 
-                    new Date(t.scheduled_date).getTime() < Date.now()
-                  ).length || upcomingTalks.length + (nextTalk ? 1 : 0)}
+                  {completedCount}
                 </div>
                 <p className="text-sm text-[#A0A0A0]">Charlas realizadas</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#FFCC00] mb-2">
-                  {totalUpcoming}
+                  {scheduledCount}
                 </div>
                 <p className="text-sm text-[#A0A0A0]">Próximas charlas</p>
               </div>
