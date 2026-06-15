@@ -222,14 +222,14 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
         <div className="overflow-x-auto">
           <div className="min-w-full">
             <div className="grid grid-cols-7 gap-px bg-[#333333]">
-              {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
+              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
                 <div key={day} className="bg-[#0A0A0A] py-3 text-center text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
                   {day}
                 </div>
               ))}
-              
-              {/* Padding empty cells */}
-              {Array.from({ length: daysInMonth[0].getDay() }).map((_, i) => (
+
+              {/* Padding empty cells — ISO 8601: semana inicia en lunes */}
+              {Array.from({ length: (daysInMonth[0].getDay() + 6) % 7 }).map((_, i) => (
                 <div key={`empty-${i}`} className="bg-[#141414] min-h-[140px]" />
               ))}
               
@@ -288,8 +288,8 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                 );
               })}
               
-              {/* Padding empty cells end */}
-              {Array.from({ length: 6 - daysInMonth[daysInMonth.length - 1].getDay() }).map((_, i) => (
+              {/* Padding empty cells end — complemento ISO 8601 */}
+              {Array.from({ length: (7 - ((daysInMonth[daysInMonth.length - 1].getDay() + 6) % 7 + 1)) % 7 }).map((_, i) => (
                 <div key={`empty-end-${i}`} className="bg-[#141414] min-h-[140px]" />
               ))}
             </div>
