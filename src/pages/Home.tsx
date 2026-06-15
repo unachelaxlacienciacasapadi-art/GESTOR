@@ -167,7 +167,7 @@ export default function Home() {
                 <div className="text-4xl font-bold text-[#00FFCC] mb-2">
                   {completedCount}
                 </div>
-                <p className="text-sm text-[#A0A0A0]">Charlas realizadas</p>
+                <p className="text-sm text-[#A0A0A0]">Charlas realizadas en 2026</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#FFCC00] mb-2">
