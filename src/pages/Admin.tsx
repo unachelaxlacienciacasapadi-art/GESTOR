@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, Check, X, Clock, Download, Image as ImageIcon, Edit3, Coffee, Mail, Phone, Instagram, MonitorPlay, ArrowLeft, LogOut, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Check, X, Clock, Download, Image as ImageIcon, Edit3, Coffee, Mail, Phone, Instagram, MonitorPlay, ArrowLeft, LogOut, Trash2, Eye, EyeOff } from "lucide-react";
 import { toPng } from 'html-to-image';
 import { cn, formatDriveUrl } from "../lib/utils";
 
@@ -370,6 +370,7 @@ export default function Admin() {
   });
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -561,14 +562,24 @@ export default function Admin() {
               <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
                 Contraseña
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] hover:text-white transition-colors"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {loginError && (
