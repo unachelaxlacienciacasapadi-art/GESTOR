@@ -6,6 +6,7 @@ import WhatsAppShareButton from "../WhatsAppShareButton";
 
 interface NextTalkCardProps {
   talk: any | null;
+  onTalkClick?: (talk: any) => void;
 }
 
 const safeFormat = (dateString: string | null | undefined, formatStr: string) => {
@@ -17,7 +18,7 @@ const safeFormat = (dateString: string | null | undefined, formatStr: string) =>
   } catch { return ""; }
 };
 
-export default function NextTalkCard({ talk }: NextTalkCardProps) {
+export default function NextTalkCard({ talk, onTalkClick }: NextTalkCardProps) {
   if (!talk) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-[#333333] rounded-3xl">
@@ -43,7 +44,10 @@ export default function NextTalkCard({ talk }: NextTalkCardProps) {
   const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(talk.title)}&dates=${gcalStart}/${gcalStart}&details=${encodeURIComponent(talk.abstract || "")}&location=${encodeURIComponent("Casa Padi")}`;
 
   return (
-    <div className="bg-gradient-to-r from-[#141414] to-[#0A0A0A] p-1 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,255,204,0.15)] group hover:shadow-[0_0_40px_rgba(0,255,204,0.25)] transition-all duration-500">
+    <div
+      className="bg-gradient-to-r from-[#141414] to-[#0A0A0A] p-1 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,255,204,0.15)] group hover:shadow-[0_0_40px_rgba(0,255,204,0.25)] transition-all duration-500 cursor-pointer"
+      onClick={() => onTalkClick?.(talk)}
+    >
       <div className="bg-[#050505] rounded-[22px] flex flex-col md:flex-row overflow-hidden relative">
         {/* Image */}
         <div className="w-full md:w-2/5 relative overflow-hidden h-48 md:h-auto border-b md:border-b-0 md:border-r border-[#333333]">
@@ -92,7 +96,7 @@ export default function NextTalkCard({ talk }: NextTalkCardProps) {
               <Calendar className="w-4 h-4 text-[#FF3366]" />
               {safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
               <a
                 href={gcalUrl}
                 target="_blank"

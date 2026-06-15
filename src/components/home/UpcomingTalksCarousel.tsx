@@ -9,6 +9,7 @@ import WhatsAppShareButton from "../WhatsAppShareButton";
 
 interface Props {
   talks: any[];
+  onTalkClick?: (talk: any) => void;
 }
 
 const safeFormat = (dateString: string | null | undefined, formatStr: string) => {
@@ -20,7 +21,7 @@ const safeFormat = (dateString: string | null | undefined, formatStr: string) =>
   } catch { return ""; }
 };
 
-export default function UpcomingTalksCarousel({ talks }: Props) {
+export default function UpcomingTalksCarousel({ talks, onTalkClick }: Props) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -73,7 +74,8 @@ export default function UpcomingTalksCarousel({ talks }: Props) {
           {talks.map((talk) => (
             <div
               key={talk.id}
-              className="flex-shrink-0 w-[280px] sm:w-[320px] bg-[#141414] border border-[#333333] rounded-2xl overflow-hidden hover:border-[#9933FF]/50 hover:shadow-[0_0_20px_rgba(153,51,255,0.15)] transition-all duration-300 group"
+              className="flex-shrink-0 w-[280px] sm:w-[320px] bg-[#141414] border border-[#333333] rounded-2xl overflow-hidden hover:border-[#9933FF]/50 hover:shadow-[0_0_20px_rgba(153,51,255,0.15)] transition-all duration-300 group cursor-pointer"
+              onClick={() => onTalkClick?.(talk)}
             >
               <div className="h-36 bg-[#1A1A1A] relative overflow-hidden">
                 {talk.speaker_photo_url ? (
@@ -101,7 +103,9 @@ export default function UpcomingTalksCarousel({ talks }: Props) {
                   <Calendar className="w-3.5 h-3.5" />
                   <span className="capitalize">{safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}</span>
                 </div>
-                <WhatsAppShareButton talk={talk} variant="compact" className="w-full" />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <WhatsAppShareButton talk={talk} variant="compact" className="w-full" />
+                </div>
               </div>
             </div>
           ))}
