@@ -26,7 +26,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
   const approvedTalksDates = React.useMemo(() => {
     return rawTalks
       .filter((t: any) => t.status === 'approved' || t.status === 'scheduled')
-      .flatMap((t: any) => [t.preferred_date_1, t.preferred_date_2, t.scheduled_date])
+      .map((t: any) => t.scheduled_date)
       .filter(Boolean)
       .map((d: string) => d.slice(0, 10));
   }, [rawTalks]);
