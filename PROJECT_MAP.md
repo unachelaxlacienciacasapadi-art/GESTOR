@@ -94,4 +94,30 @@ Resultado: ~550 líneas en `app.ts`, separadas en 11 secciones temáticas, con m
 7.  **Preparación Recap:** ✅ Schema de base de datos listo para almacenar URLs de stream y recaps.
 
 ---
-*Última actualización: 2026-05-12 (Nuevos filtros de admin y schema de recap)*
+
+## ⚠️ Restricción de Arquitectura Vercel (CRÍTICO)
+
+`api/index.ts` **DEBE ser autosuficiente** — sin imports relativos fuera de `api/`.
+
+Vercel Functions solo resuelve imports de `node_modules`, no paths relativos a carpetas del proyecto. Los imports como `import app from "../../src/lib/email"` fallan en runtime con `FUNCTION_INVOCATION_FAILED` (HTTP 500).
+
+### Solución Implementada
+- **Producción (Vercel):** `api/index.ts` contiene TODO inline:
+  - Inicialización de dotenv
+  - Pool PostgreSQL + `initDb()`
+  - Schemas Zod
+  - Middleware JWT
+  - `sendConfirmationEmail` (Resend)
+  - Todas las rutas Express (~860 líneas)
+  
+- **Desarrollo (local):** `server.ts` → `api/server/app.ts` (modular, con Vite HMR)
+
+### 🚨 Regla Importante
+Si agregas lógica nueva al backend, **debes actualizarla en DOS lugares:**
+1. `api/server/app.ts` (para desarrollo local con HMR)
+2. `api/index.ts` (para producción en Vercel)
+
+Luego haz commit normal: El `api/index.js` compilado está en `.gitignore` (Vercel lo genera en su build).
+
+---
+*Última actualización: 2026-06-14 (Restricción Vercel + api/index.ts autosuficiente)*
