@@ -17,7 +17,7 @@ export const talkSchema = z.object({
   speaker_bio: z.string().min(10).max(1000),
   email: z.string().email(),
   phone: z.string().regex(/^\d{10}$/),
-  _trap: z.string().max(0),
+  _trap: z.string().max(0).optional().default(""),
   preferred_date_1: z.string().optional(),
   preferred_date_2: z.string().optional(),
 });
