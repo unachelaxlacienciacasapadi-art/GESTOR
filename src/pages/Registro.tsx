@@ -133,11 +133,15 @@ export default function Registro() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to submit");
-      
       const data = await res.json();
+      if (!res.ok) {
+        console.error("Validation error:", JSON.stringify(data, null, 2));
+        alert("Error de validación:\n" + JSON.stringify(data.details?.fieldErrors || data, null, 2));
+        setSubmitStatus("error");
+        return;
+      }
       setFolioId(data.id);
-      
+
       setSubmitStatus("success");
       form.reset();
       setPhotoPreview(null);
