@@ -433,7 +433,7 @@ app.get("/api/talks", async (req, res) => {
 app.post("/api/talks", talkLimiter, upload.single("photo"), async (req, res) => {
   try {
     const parsed = talkSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Datos inválidos" });
+    if (!parsed.success) return res.status(400).json({ error: "Datos inválidos", details: parsed.error.flatten() });
 
     console.log("POST /api/talks - Recibiendo propuesta...");
     const {
