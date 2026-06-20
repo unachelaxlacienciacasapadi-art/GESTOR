@@ -155,7 +155,7 @@ const talkSchema = z.object({
   title: z.string().min(5).max(200),
   abstract: z.string().min(10).max(2000),
   speaker_name: z.string().min(2).max(100),
-  speaker_bio: z.string().min(10).max(1000),
+  speaker_bio: z.string().min(2).max(2000),
   email: z.string().email(),
   phone: z.string().transform(val => val.replace(/[\s\-\(\)]/g, '')).pipe(z.string().regex(/^\d{10,11}$/)),
   _trap: z.string().max(0).optional().default(""),
