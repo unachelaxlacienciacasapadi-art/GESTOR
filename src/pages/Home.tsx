@@ -89,8 +89,13 @@ export default function Home() {
         setNextTalk(scheduled[0] ?? null);
         setUpcoming(scheduled.slice(1, 6));
         setTotalUpcoming(scheduled.length);
-        setCompletedCount((data as any[]).filter(t => t.status === "completed").length);
-        setScheduledCount((data as any[]).filter(t => t.status === "scheduled").length);
+        setCompletedCount((data as any[]).filter(t => {
+          if (t.status !== "completed" || !t.scheduled_date) return false;
+          const parsed = parseTalkDate(t.scheduled_date);
+          if (parsed === null) return false;
+          return new Date(parsed).getFullYear() === 2026;
+        }).length);
+        setScheduledCount(scheduled.length);
       })
       .catch(console.error);
 
