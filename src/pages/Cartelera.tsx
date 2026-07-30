@@ -74,6 +74,13 @@ export default function Cartelera() {
     }
   };
 
+  const parseTalkDate = (dateString: string | null | undefined): number | null => {
+    if (!dateString) return null;
+    const normalized = dateString.replace(" ", "T");
+    const parsed = new Date(normalized).getTime();
+    return isNaN(parsed) ? null : parsed;
+  };
+
   const getCalendarLink = (talk: Talk) => {
     if (!talk.scheduled_date) return "#";
     try {
@@ -112,23 +119,30 @@ export default function Cartelera() {
         now.setHours(0, 0, 0, 0);
         const nowTime = now.getTime();
 
-        const scheduled = data.filter(t =>
-          t.status === "scheduled" &&
-          t.scheduled_date &&
-          new Date(t.scheduled_date).getTime() >= nowTime
-        );
+        const scheduled: Talk[] = [];
+        const pastFromDate: Talk[] = [];
 
-        const pastFromDate = data.filter(t =>
-          t.status === "scheduled" &&
-          t.scheduled_date &&
-          new Date(t.scheduled_date).getTime() < nowTime
-        );
-        
+        data.forEach(t => {
+          if (t.status !== "scheduled" || !t.scheduled_date) return;
+
+          const parsed = parseTalkDate(t.scheduled_date);
+          if (parsed === null) {
+            console.warn(`Talk ${t.id} has invalid scheduled_date`, t.scheduled_date);
+            return;
+          }
+
+          if (parsed >= nowTime) {
+            scheduled.push(t);
+          } else {
+            pastFromDate.push(t);
+          }
+        });
+
         const officiallyCompleted = data.filter(t => t.status === "completed");
         const completed = [...pastFromDate, ...officiallyCompleted];
-        
+
         // Sort upcoming by date ascending
-        scheduled.sort((a, b) => new Date(a.scheduled_date!).getTime() - new Date(b.scheduled_date!).getTime());
+        scheduled.sort((a, b) => (parseTalkDate(a.scheduled_date) ?? 0) - (parseTalkDate(b.scheduled_date) ?? 0));
         
         setUpcoming(scheduled);
         setPast(completed);
