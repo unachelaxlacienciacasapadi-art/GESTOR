@@ -43,6 +43,13 @@ const safeFormat = (d: string | null | undefined, f: string) => {
   } catch { return ""; }
 };
 
+const parseTalkDate = (dateString: string | null | undefined): number | null => {
+  if (!dateString) return null;
+  const normalized = dateString.replace(" ", "T");
+  const parsed = new Date(normalized).getTime();
+  return isNaN(parsed) ? null : parsed;
+};
+
 const INFO_CARDS = [
   { img: ambienteImg, title: "Ambiente Relajado", desc: "Disfruta de ciencia accesible mientras tomas tu bebida favorita en un entorno acogedor.", color: "#FF3366" },
   { img: conocimientoImg, title: "Conocimiento", desc: "Charlas impartidas por estudiantes y divulgadores apasionados por compartir su saber.", color: "#00FFCC" },
@@ -65,10 +72,20 @@ export default function Home() {
     fetch("/api/talks?includeAll=true")
       .then(r => r.json())
       .then(data => {
-        const now = Date.now();
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const nowTime = now.getTime();
         const scheduled = (data as any[])
-          .filter(t => t.status === "scheduled" && t.scheduled_date && new Date(t.scheduled_date).getTime() >= now)
-          .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
+          .filter(t => {
+            if (t.status !== "scheduled" || !t.scheduled_date) return false;
+            const parsed = parseTalkDate(t.scheduled_date);
+            if (parsed === null) {
+              console.warn(`Talk ${t.id} has invalid scheduled_date`, t.scheduled_date);
+              return false;
+            }
+            return parsed >= nowTime;
+          })
+          .sort((a, b) => (parseTalkDate(a.scheduled_date) ?? 0) - (parseTalkDate(b.scheduled_date) ?? 0));
         setNextTalk(scheduled[0] ?? null);
         setUpcoming(scheduled.slice(1, 6));
         setTotalUpcoming(scheduled.length);
