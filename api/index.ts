@@ -380,51 +380,150 @@ app.get("/api/passport/:email", async (req, res) => {
   }
 });
 
-// ── Ponentes ──────────────────────────────────────────────────────────────────
+// ── Lectura pública de charlas ───────────────────────────────────────────────
+//
+// Las respuestas públicas NUNCA incluyen datos de contacto del ponente (email,
+// teléfono, redes), notas internas ni propuestas pendientes/rechazadas: esos
+// solo salen con token de admin. Las fotos guardadas como data URL base64 se
+// sirven aparte por /api/talks/:id/photo para no inflar cada listado con MBs.
+
+const PUBLIC_STATUSES = ["scheduled", "completed"];
+
+const photoUrlSql = (column: string, n: 1 | 2) =>
+  `CASE WHEN ${column} LIKE 'data:%' THEN '/api/talks/' || id || '/photo${n === 2 ? "?n=2" : ""}' ELSE ${column} END AS ${column}`;
+
+const PUBLIC_TALK_COLUMNS = [
+  "id", "title", "abstract", "description_short", "category", "status",
+  "scheduled_date", "speaker_name", "speaker_bio", "speaker_2_name",
+  "speaker_2_bio", "institution", "transmission_url", "stream_url",
+  "flyer_image_url", "facebook_url", "summary", "recap_summary",
+  photoUrlSql("speaker_photo_url", 1),
+  photoUrlSql("speaker_2_photo_url", 2),
+].join(", ");
+
+const isAdminRequest = (req: express.Request): boolean => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return false;
+  try {
+    jwt.verify(token, JWT_SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 app.get("/api/speakers", async (_req, res) => {
   try {
-    const { rows } = await pool.query(
-      `SELECT speaker_name, speaker_bio, speaker_photo_url, COUNT(id) as talk_count FROM talks WHERE status IN ('completed','scheduled') GROUP BY speaker_name, speaker_bio, speaker_photo_url ORDER BY talk_count DESC`
+    const { rows } = await pool.query(`
+      WITH s AS (
+        SELECT id, trim(speaker_name) AS speaker_name, speaker_bio, institution,
+               speaker_photo_url, scheduled_date, lower(trim(speaker_name)) AS k
+        FROM talks WHERE status = ANY($1)
+      )
+      SELECT DISTINCT ON (k)
+        speaker_name, speaker_bio, institution,
+        ${photoUrlSql("speaker_photo_url", 1)},
+        (SELECT count(*)::int FROM s s2 WHERE s2.k = s.k) AS talk_count,
+        (SELECT max(scheduled_date) FROM s s2 WHERE s2.k = s.k) AS last_talk_date
+      FROM s
+      ORDER BY k, (speaker_photo_url IS NULL OR speaker_photo_url = ''), scheduled_date DESC
+    `, [PUBLIC_STATUSES]);
+    rows.sort((a, b) =>
+      b.talk_count - a.talk_count ||
+      String(b.last_talk_date ?? "").localeCompare(String(a.last_talk_date ?? ""))
     );
     res.json(rows);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch speakers" });
   }
 });
 
-// ── Charlas: lectura ──────────────────────────────────────────────────────────
-
+// Público: charlas agendadas/realizadas (pasadas y futuras), ordenadas por fecha.
+//   ?upcoming=true → solo de hoy en adelante (hora de CDMX).
+// Admin (requiere token): ?includeAll=true → todas las columnas y estados.
+//   ?status=… con un estado no público también requiere token.
 app.get("/api/talks", async (req, res) => {
   try {
     const includeAll = req.query.includeAll === "true";
-    const recent = req.query.recent === "true";
-    const status = req.query.status as string;
-    const limit = parseInt(req.query.limit as string) || null;
+    const status = typeof req.query.status === "string" ? req.query.status : null;
+    const upcoming = req.query.upcoming === "true";
+    const parsedLimit = parseInt(req.query.limit as string, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 500) : null;
+    const admin = isAdminRequest(req);
+
+    if ((includeAll || (status && !PUBLIC_STATUSES.includes(status))) && !admin) {
+      return res.status(401).json({ error: "Access denied" });
+    }
 
     let query: string;
-    let values: any[] = [];
+    const values: any[] = [];
 
     if (includeAll) {
       query = "SELECT * FROM talks ORDER BY created_at DESC";
-    } else if (recent) {
-      query = "SELECT * FROM talks WHERE status IN ('scheduled', 'completed', 'approved') ORDER BY scheduled_date DESC LIMIT 4";
-    } else if (status) {
-      query = "SELECT * FROM talks WHERE status = $1 ORDER BY scheduled_date DESC";
-      values = [status];
     } else {
-      query = "SELECT * FROM talks WHERE status = 'scheduled' AND scheduled_date IS NOT NULL AND scheduled_date >= CURRENT_TIMESTAMP ORDER BY scheduled_date ASC";
+      const columns = admin && status ? "*" : PUBLIC_TALK_COLUMNS;
+      values.push(status ? [status] : PUBLIC_STATUSES);
+      query = `SELECT ${columns} FROM talks WHERE status = ANY($1) AND scheduled_date IS NOT NULL`;
+      if (upcoming) {
+        // scheduled_date guarda hora local de CDMX sin zona: se compara contra el
+        // inicio del día de hoy en CDMX para que la charla siga visible todo el día.
+        query += " AND scheduled_date >= date_trunc('day', now() AT TIME ZONE 'America/Mexico_City')";
+      }
+      query += upcoming ? " ORDER BY scheduled_date ASC" : " ORDER BY scheduled_date DESC";
     }
 
-    if (limit && !recent) {
-      query += ` LIMIT ${limit}`;
-    }
+    if (limit) query += ` LIMIT ${limit}`;
 
     const { rows } = await pool.query(query, values);
     res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch talks" });
+  }
+});
+
+// Detalle público de una charla (incluye fotos del evento, que no van en el listado).
+app.get("/api/talks/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid id" });
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${PUBLIC_TALK_COLUMNS}, event_photos FROM talks WHERE id = $1 AND status = ANY($2)`,
+      [id, PUBLIC_STATUSES]
+    );
+    if (!rows[0]) return res.status(404).json({ error: "Not found" });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch talk" });
+  }
+});
+
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+
+app.get("/api/talks/:id/photo", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).end();
+  const column = req.query.n === "2" ? "speaker_2_photo_url" : "speaker_photo_url";
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${column} AS url FROM talks WHERE id = $1 AND status = ANY($2)`,
+      [id, PUBLIC_STATUSES]
+    );
+    const url: string | null = rows[0]?.url ?? null;
+    if (!url) return res.status(404).end();
+    if (/^https?:\/\//i.test(url)) return res.redirect(url);
+    const match = url.match(/^data:([^;,]+);base64,([\s\S]*)$/);
+    // Solo tipos de imagen rasterizados: un data URL de SVG/HTML podría ejecutar scripts.
+    if (!match || !ALLOWED_PHOTO_TYPES.includes(match[1].toLowerCase())) return res.status(404).end();
+    res.set("Content-Type", match[1]);
+    res.set("X-Content-Type-Options", "nosniff");
+    res.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+    res.send(Buffer.from(match[2], "base64"));
+  } catch (err) {
+    console.error(err);
+    res.status(500).end();
   }
 });
 

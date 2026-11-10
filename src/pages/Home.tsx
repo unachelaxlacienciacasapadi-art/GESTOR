@@ -60,49 +60,39 @@ const INFO_CARDS = [
 export default function Home() {
   const [nextTalk, setNextTalk] = useState<any>(null);
   const [upcomingTalks, setUpcoming] = useState<any[]>([]);
-  const [recentTalks, setRecentTalks] = useState<any[]>([]);
-  const [totalUpcoming, setTotalUpcoming] = useState<number>(0);
   const [subStatus, setSubStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [selectedTalk, setSelectedTalk] = useState<any>(null);
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [scheduledCount, setScheduledCount] = useState<number>(0);
 
   useEffect(() => {
-    // Next upcoming scheduled talk
-    fetch("/api/talks?includeAll=true")
+    fetch("/api/talks")
       .then(r => r.json())
-      .then(data => {
+      .then((data: any[]) => {
+        if (!Array.isArray(data)) return;
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        const nowTime = now.getTime();
-        const scheduled = (data as any[])
-          .filter(t => {
-            if (t.status !== "scheduled" || !t.scheduled_date) return false;
-            const parsed = parseTalkDate(t.scheduled_date);
-            if (parsed === null) {
-              console.warn(`Talk ${t.id} has invalid scheduled_date`, t.scheduled_date);
-              return false;
-            }
-            return parsed >= nowTime;
-          })
-          .sort((a, b) => (parseTalkDate(a.scheduled_date) ?? 0) - (parseTalkDate(b.scheduled_date) ?? 0));
-        setNextTalk(scheduled[0] ?? null);
-        setUpcoming(scheduled.slice(1, 6));
-        setTotalUpcoming(scheduled.length);
-        setCompletedCount((data as any[]).filter(t => {
-          if (t.status !== "completed" || !t.scheduled_date) return false;
-          const parsed = parseTalkDate(t.scheduled_date);
-          if (parsed === null) return false;
-          return new Date(parsed).getFullYear() === 2026;
-        }).length);
-        setScheduledCount(scheduled.length);
-      })
-      .catch(console.error);
+        const todayStart = now.getTime();
+        const currentYear = now.getFullYear();
 
-    // Recent completed talks for community tab
-    fetch("/api/talks?recent=true")
-      .then(r => r.json())
-      .then(data => setRecentTalks(Array.isArray(data) ? data : []))
+        const dated = data
+          .map(t => ({ talk: t, time: parseTalkDate(t.scheduled_date) }))
+          .filter((x): x is { talk: any; time: number } => x.time !== null);
+
+        // "Próxima" vs "realizada" se decide por fecha, no por status: muchas
+        // charlas ya ocurridas siguen marcadas como "scheduled" en la BD.
+        const upcoming = dated
+          .filter(x => x.time >= todayStart)
+          .sort((a, b) => a.time - b.time)
+          .map(x => x.talk);
+
+        setNextTalk(upcoming[0] ?? null);
+        setUpcoming(upcoming.slice(1, 6));
+        setScheduledCount(upcoming.length);
+        setCompletedCount(
+          dated.filter(x => x.time < todayStart && new Date(x.time).getFullYear() === currentYear).length
+        );
+      })
       .catch(console.error);
   }, []);
 
@@ -189,7 +179,7 @@ export default function Home() {
                 <div className="text-4xl font-bold text-[#00FFCC] mb-2">
                   {completedCount}
                 </div>
-                <p className="text-sm text-[#A0A0A0]">Charlas realizadas en 2026</p>
+                <p className="text-sm text-[#A0A0A0]">Charlas realizadas en {new Date().getFullYear()}</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#FFCC00] mb-2">

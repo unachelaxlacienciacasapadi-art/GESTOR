@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useCallback } from "react";
 import { cn } from "../../lib/utils";
 import WhatsAppShareButton from "../WhatsAppShareButton";
+import SpeakerAvatar, { getAccentColor } from "../SpeakerAvatar";
 
 interface Props {
   talks: any[];
@@ -87,8 +88,11 @@ export default function UpcomingTalksCarousel({ talks, onTalkClick }: Props) {
                     className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[#333333]">
-                    <Calendar className="w-10 h-10" />
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ background: `radial-gradient(circle at 30% 20%, ${getAccentColor(talk.speaker_name || "")}33, #141414 70%)` }}
+                  >
+                    <SpeakerAvatar name={talk.speaker_name || ""} className="w-20 h-20" textClassName="text-2xl" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
@@ -101,7 +105,7 @@ export default function UpcomingTalksCarousel({ talks, onTalkClick }: Props) {
                 <p className="text-xs text-[#A0A0A0] mb-3">{talk.speaker_name}</p>
                 <div className="flex items-center gap-1.5 text-xs text-[#00FFCC] mb-3">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span className="capitalize">{safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}</span>
+                  <span className="first-letter:uppercase">{safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}</span>
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <WhatsAppShareButton talk={talk} variant="compact" className="w-full" />

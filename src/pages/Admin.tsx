@@ -614,9 +614,34 @@ export default function Admin() {
     }
   };
 
+  // Un <a href download> no puede mandar el header Authorization, así que el
+  // respaldo se pide con fetch y se descarga desde un blob.
+  const downloadBackup = async () => {
+    try {
+      const res = await fetch("/api/admin/backup", {
+        headers: { "Authorization": `Bearer ${localStorage.getItem("adminToken")}` }
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `respaldo-chelaxlaciencia-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download backup", error);
+      alert("No se pudo descargar el respaldo.");
+    }
+  };
+
   const fetchTalks = async () => {
     try {
-      const res = await fetch("/api/talks?includeAll=true");
+      const res = await fetch("/api/talks?includeAll=true", {
+        headers: { "Authorization": `Bearer ${localStorage.getItem("adminToken")}` }
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
       if (!res.ok) {
         const body = await res.text();
         console.error(`fetchTalks: HTTP ${res.status}`, body);
@@ -819,15 +844,15 @@ export default function Admin() {
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-          <a
-            href="/api/admin/backup"
-            download
+          <button
+            type="button"
+            onClick={downloadBackup}
             className="flex items-center gap-2 px-4 py-2 text-[#00FFCC] bg-[#00FFCC]/10 hover:bg-[#00FFCC]/20 rounded-full border border-[#00FFCC]/30 transition-colors text-sm font-medium shrink-0"
             title="Descargar respaldo de la base de datos"
           >
             <Download className="w-4 h-4" />
             <span className="hidden md:inline">Respaldo</span>
-          </a>
+          </button>
           <div className="flex bg-[#141414] rounded-full p-1 shadow-lg border border-[#333333] shrink-0">
             <button
               onClick={() => handleTabChange("list")}
@@ -1350,6 +1375,7 @@ export default function Admin() {
                                     try {
                                       const res = await fetch(`/api/talks/${selectedTalk.id}/photos`, {
                                         method: "POST",
+                                        headers: { "Authorization": `Bearer ${localStorage.getItem("adminToken")}` },
                                         body: formData,
                                       });
                                       if (res.ok) {
