@@ -77,20 +77,20 @@ const AvailabilityManager = ({ token }: { token: string }) => {
     const hasTalk = approvedTalksDates.includes(dateStr);
 
     if (hasTalk) {
-      return "!bg-[#333333]/50 !text-[#A0A0A0] !cursor-not-allowed";
+      return "!bg-[#2E5038]/50 !text-[#B9C4B6] !cursor-not-allowed";
     }
 
     if (exception) {
       return exception.is_available
-        ? "!bg-[#00FFCC]/20 !text-[#00FFCC] !border !border-[#00FFCC]/50"
-        : "!bg-[#FF3366]/20 !text-[#FF3366] !border !border-[#FF3366]/50";
+        ? "!bg-[#4FC1B2]/20 !text-[#4FC1B2] !border !border-[#4FC1B2]/50"
+        : "!bg-[#F0708F]/20 !text-[#F0708F] !border !border-[#F0708F]/50";
     }
 
     if (isWednesday(date)) {
-      return "!bg-[#FFCC00]/20 !text-[#FFCC00] !border !border-[#FFCC00]/50";
+      return "!bg-[#E8826F]/20 !text-[#E8826F] !border !border-[#E8826F]/50";
     }
 
-    return "!text-[#E0E0E0] hover:!bg-[#333333]";
+    return "!text-[#EAE6DA] hover:!bg-[#2E5038]";
   };
 
   const handleDateClick = (date: Date) => {
@@ -181,37 +181,37 @@ const AvailabilityManager = ({ token }: { token: string }) => {
   return (
     <div className="space-y-6">
       <style>{`
-        .react-calendar { background: #141414 !important; border: 1px solid #333333 !important; border-radius: 1rem; color: white !important; font-family: inherit !important; padding: 1rem; width: 100% !important; }
+        .react-calendar { background: #16301F !important; border: 1px solid #2E5038 !important; border-radius: 1rem; color: white !important; font-family: inherit !important; padding: 1rem; width: 100% !important; }
         .react-calendar__navigation button { color: white !important; min-width: 44px; background: none; font-size: 16px; margin-top: 8px; border-radius: 0.5rem; }
-        .react-calendar__navigation button:hover, .react-calendar__navigation button:focus { background: #333333 !important; }
-        .react-calendar__month-view__weekdays { text-transform: uppercase; font-weight: bold; font-size: 0.75em; color: #A0A0A0; padding-bottom: 0.5rem; }
-        .react-calendar__month-view__days__day--neighboringMonth { color: #444444 !important; }
+        .react-calendar__navigation button:hover, .react-calendar__navigation button:focus { background: #2E5038 !important; }
+        .react-calendar__month-view__weekdays { text-transform: uppercase; font-weight: bold; font-size: 0.75em; color: #B9C4B6; padding-bottom: 0.5rem; }
+        .react-calendar__month-view__days__day--neighboringMonth { color: #3B5E45 !important; }
         .react-calendar__tile { padding: 0.75em 0.5em !important; border-radius: 0.5rem !important; margin: 2px !important; height: auto !important; transition: all 0.2s; }
-        .react-calendar__tile:disabled { background-color: #0A0A0A !important; }
-        .react-calendar__tile--now { background: #333333 !important; }
+        .react-calendar__tile:disabled { background-color: #0F2016 !important; }
+        .react-calendar__tile--now { background: #2E5038 !important; }
       `}</style>
 
-      <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6">
+      <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] p-6">
         <h2 className="text-xl font-serif font-bold text-white mb-4">Gestionar Disponibilidad de Fechas</h2>
 
         <div className="flex gap-4 mb-6 flex-wrap">
-          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
-            <span className="w-3 h-3 rounded-full bg-[#FFCC00]/20 border border-[#FFCC00]/50 block"></span> Miércoles Disponibles
+          <div className="flex items-center gap-2 text-xs text-[#B9C4B6]">
+            <span className="w-3 h-3 rounded-full bg-[#E8826F]/20 border border-[#E8826F]/50 block"></span> Miércoles Disponibles
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
-            <span className="w-3 h-3 rounded-full bg-[#00FFCC]/20 border border-[#00FFCC]/50 block"></span> Fechas Extra
+          <div className="flex items-center gap-2 text-xs text-[#B9C4B6]">
+            <span className="w-3 h-3 rounded-full bg-[#4FC1B2]/20 border border-[#4FC1B2]/50 block"></span> Fechas Extra
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
-            <span className="w-3 h-3 rounded-full bg-[#FF3366]/20 border border-[#FF3366]/50 block"></span> Miércoles Bloqueados
+          <div className="flex items-center gap-2 text-xs text-[#B9C4B6]">
+            <span className="w-3 h-3 rounded-full bg-[#F0708F]/20 border border-[#F0708F]/50 block"></span> Miércoles Bloqueados
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#A0A0A0]">
-            <span className="w-3 h-3 rounded-full bg-[#333333]/50 block"></span> Ocupado (Aprobada)
+          <div className="flex items-center gap-2 text-xs text-[#B9C4B6]">
+            <span className="w-3 h-3 rounded-full bg-[#2E5038]/50 block"></span> Ocupado (Aprobada)
           </div>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="w-8 h-8 border-4 border-[#FFCC00]/30 border-t-[#FFCC00] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-[#E8826F]/30 border-t-[#E8826F] rounded-full animate-spin" />
           </div>
         ) : (
           <Calendar
@@ -226,12 +226,12 @@ const AvailabilityManager = ({ token }: { token: string }) => {
         )}
       </div>
 
-      <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6">
+      <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] p-6">
         <h3 className="text-lg font-bold text-white mb-4">Excepciones Activas</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#333333] text-[#A0A0A0] text-xs uppercase tracking-wider">
+              <tr className="border-b border-[#2E5038] text-[#B9C4B6] text-xs uppercase tracking-wider">
                 <th className="p-3">Fecha</th>
                 <th className="p-3">Tipo</th>
                 <th className="p-3">Razón</th>
@@ -240,21 +240,21 @@ const AvailabilityManager = ({ token }: { token: string }) => {
             </thead>
             <tbody>
               {exceptions.map(ex => (
-                <tr key={ex.id} className="border-b border-[#222222] text-sm text-white hover:bg-[#1A1A1A]">
+                <tr key={ex.id} className="border-b border-[#22432D] text-sm text-white hover:bg-[#1C3A26]">
                   <td className="p-3 capitalize">{formatearFecha(`${ex.date}T${ex.time}`)}</td>
                   <td className="p-3">
                     <span className={cn(
                       "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
-                      ex.is_available ? "bg-[#00FFCC]/20 text-[#00FFCC]" : "bg-[#FF3366]/20 text-[#FF3366]"
+                      ex.is_available ? "bg-[#4FC1B2]/20 text-[#4FC1B2]" : "bg-[#F0708F]/20 text-[#F0708F]"
                     )}>
                       {ex.is_available ? "Habilitada" : "Bloqueada"}
                     </span>
                   </td>
-                  <td className="p-3 text-[#A0A0A0]">{ex.reason || "-"}</td>
+                  <td className="p-3 text-[#B9C4B6]">{ex.reason || "-"}</td>
                   <td className="p-3">
                     <button
                       onClick={() => handleDeleteException(ex.id)}
-                      className="text-[#FF3366] hover:text-white transition-colors text-xs"
+                      className="text-[#F0708F] hover:text-white transition-colors text-xs"
                     >
                       Eliminar
                     </button>
@@ -263,7 +263,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
               ))}
               {exceptions.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-6 text-center text-[#A0A0A0] text-sm italic">
+                  <td colSpan={4} className="p-6 text-center text-[#B9C4B6] text-sm italic">
                     No hay excepciones activas.
                   </td>
                 </tr>
@@ -275,7 +275,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
 
       {showModal && selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#141414] rounded-2xl shadow-2xl border border-[#333333] p-6 w-full max-w-md">
+          <div className="bg-[#16301F] rounded-2xl shadow-2xl border border-[#2E5038] p-6 w-full max-w-md">
             <h3 className="text-xl font-serif font-bold text-white mb-4 capitalize">
               {formatearFecha(formatDateString(selectedDate) + 'T12:00:00')}
             </h3>
@@ -287,20 +287,20 @@ const AvailabilityManager = ({ token }: { token: string }) => {
               if (existingEx) {
                 return (
                   <div className="space-y-4">
-                    <p className="text-sm text-[#A0A0A0]">
+                    <p className="text-sm text-[#B9C4B6]">
                       Esta fecha tiene una excepción activa:
-                      <strong className={existingEx.is_available ? "text-[#00FFCC] ml-1" : "text-[#FF3366] ml-1"}>
+                      <strong className={existingEx.is_available ? "text-[#4FC1B2] ml-1" : "text-[#F0708F] ml-1"}>
                         {existingEx.is_available ? "Habilitada" : "Bloqueada"}
                       </strong>
                     </p>
-                    <p className="text-sm text-white bg-[#0A0A0A] p-3 rounded-lg border border-[#333333]">
+                    <p className="text-sm text-white bg-[#0F2016] p-3 rounded-lg border border-[#2E5038]">
                       Razón: {existingEx.reason || "Sin razón"}
                     </p>
                     <div className="flex gap-3 pt-4">
-                      <button onClick={() => setShowModal(false)} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#333333] hover:bg-[#444444]">
+                      <button onClick={() => setShowModal(false)} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#2E5038] hover:bg-[#3B5E45]">
                         Cerrar
                       </button>
-                      <button onClick={() => handleDeleteException(existingEx.id)} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#FF3366] hover:bg-[#FF1A53] shadow-[0_0_15px_rgba(255,51,102,0.3)]">
+                      <button onClick={() => handleDeleteException(existingEx.id)} className="flex-1 py-2 rounded-xl text-sm font-bold text-[#1F1D1A] bg-[#F0708F] hover:bg-[#E85C7E] shadow-[0_0_15px_rgba(240,112,143,0.3)]">
                         Eliminar Excepción
                       </button>
                     </div>
@@ -312,7 +312,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
 
               return (
                 <div className="space-y-4">
-                  <p className="text-sm text-[#E0E0E0]">
+                  <p className="text-sm text-[#EAE6DA]">
                     {isWed
                       ? "¿Deseas bloquear este miércoles para que nadie pueda seleccionarlo?"
                       : "¿Deseas habilitar esta fecha como una opción extra disponible?"}
@@ -320,29 +320,29 @@ const AvailabilityManager = ({ token }: { token: string }) => {
 
                   {!isWed && (
                     <div>
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Hora</label>
                       <input
                         type="time"
                         value={modalTime}
                         onChange={e => setModalTime(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm"
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Razón / Evento *</label>
+                    <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Razón / Evento *</label>
                     <input
                       type="text"
                       value={modalReason}
                       onChange={e => setModalReason(e.target.value)}
                       placeholder={isWed ? "Ej. Festivo nacional, vacaciones..." : "Ej. Evento especial de fin de semana"}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm"
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm"
                     />
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <button onClick={() => setShowModal(false)} disabled={isSaving} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#333333] hover:bg-[#444444] disabled:opacity-50">
+                    <button onClick={() => setShowModal(false)} disabled={isSaving} className="flex-1 py-2 rounded-xl text-sm font-bold text-white bg-[#2E5038] hover:bg-[#3B5E45] disabled:opacity-50">
                       Cancelar
                     </button>
                     <button
@@ -350,7 +350,7 @@ const AvailabilityManager = ({ token }: { token: string }) => {
                       disabled={isSaving}
                       className={cn(
                         "flex-1 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50",
-                        isWed ? "bg-[#FF3366] hover:bg-[#FF1A53] shadow-[0_0_15px_rgba(255,51,102,0.3)]" : "bg-[#00FFCC] text-black hover:bg-[#00CCAA] shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+                        isWed ? "bg-[#F0708F] hover:bg-[#E85C7E] shadow-[0_0_15px_rgba(240,112,143,0.3)]" : "bg-[#4FC1B2] text-black hover:bg-[#3BA99B] shadow-[0_0_15px_rgba(79,193,178,0.3)]"
                       )}
                     >
                       {isSaving ? "Guardando..." : isWed ? "Bloquear Miércoles" : "Habilitar Fecha"}
@@ -532,36 +532,36 @@ export default function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0F2016] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md mb-6">
-          <a href="/" className="inline-flex items-center gap-2 text-[#A0A0A0] hover:text-white transition-colors text-sm font-medium">
+          <a href="/" className="inline-flex items-center gap-2 text-[#B9C4B6] hover:text-white transition-colors text-sm font-medium">
             <ArrowLeft className="w-4 h-4" />
             Volver al sitio web
           </a>
         </div>
-        <div className="bg-[#141414] p-8 rounded-2xl shadow-2xl border border-[#333333] w-full max-w-md">
+        <div className="bg-[#16301F] p-8 rounded-2xl shadow-2xl border border-[#2E5038] w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold text-white mb-2">Casa Padi</h1>
-            <p className="text-[#A0A0A0] text-sm">Panel de Administración</p>
+            <p className="text-[#B9C4B6] text-sm">Panel de Administración</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">
                 Usuario
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white"
+                className="w-full px-4 py-3 bg-[#0F2016] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] transition-all outline-none text-white"
                 placeholder="Ingresa tu usuario"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">
                 Contraseña
               </label>
               <div className="relative">
@@ -569,14 +569,14 @@ export default function Admin() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white"
+                  className="w-full px-4 py-3 pr-12 bg-[#0F2016] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] transition-all outline-none text-white"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B9C4B6] hover:text-white transition-colors"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -585,7 +585,7 @@ export default function Admin() {
             </div>
 
             {loginError && (
-              <div className="p-3 bg-[#FF3366]/10 border border-[#FF3366]/30 rounded-lg text-[#FF3366] text-sm text-center">
+              <div className="p-3 bg-[#F0708F]/10 border border-[#F0708F]/30 rounded-lg text-[#F0708F] text-sm text-center">
                 {loginError}
               </div>
             )}
@@ -593,7 +593,7 @@ export default function Admin() {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full py-3 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+              className="w-full py-3 bg-[#4FC1B2] text-black rounded-xl font-bold hover:bg-[#3BA99B] transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(79,193,178,0.3)]"
             >
               {isLoggingIn ? "Verificando..." : "Ingresar al Panel"}
             </button>
@@ -769,7 +769,7 @@ export default function Admin() {
 
       const dataUrl = await toPng(posterRef.current, {
         cacheBust: true,
-        backgroundColor: '#0A0A0A',
+        backgroundColor: '#0F2016',
         pixelRatio: 2,
         style: {
           transform: 'none',
@@ -798,7 +798,7 @@ export default function Admin() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="w-10 h-10 border-4 border-[#9933FF]/30 border-t-[#9933FF] rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#F2B134]/30 border-t-[#F2B134] rounded-full animate-spin" />
       </div>
     );
   }
@@ -809,16 +809,16 @@ export default function Admin() {
         <div className="flex justify-between items-center w-full md:w-auto">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <a href="/" className="flex items-center justify-center w-8 h-8 rounded-full bg-[#141414] border border-[#333333] text-[#A0A0A0] hover:text-white hover:bg-[#1A1A1A] transition-colors" title="Volver al sitio web">
+              <a href="/" className="flex items-center justify-center w-8 h-8 rounded-full bg-[#16301F] border border-[#2E5038] text-[#B9C4B6] hover:text-white hover:bg-[#1C3A26] transition-colors" title="Volver al sitio web">
                 <ArrowLeft className="w-4 h-4" />
               </a>
               <h1 className="text-2xl md:text-3xl font-serif font-bold text-white">Panel de Administración</h1>
             </div>
-            <p className="text-sm text-[#A0A0A0]">Gestiona las charlas de "Una chela por la ciencia"</p>
+            <p className="text-sm text-[#B9C4B6]">Gestiona las charlas de "Una chela por la ciencia"</p>
           </div>
           <button
             onClick={handleLogout}
-            className="md:hidden p-2 text-[#A0A0A0] hover:text-white bg-[#141414] rounded-full border border-[#333333]"
+            className="md:hidden p-2 text-[#B9C4B6] hover:text-white bg-[#16301F] rounded-full border border-[#2E5038]"
             title="Cerrar sesión"
           >
             <LogOut className="w-5 h-5" />
@@ -829,18 +829,18 @@ export default function Admin() {
           <button
             type="button"
             onClick={downloadBackup}
-            className="flex items-center gap-2 px-4 py-2 text-[#00FFCC] bg-[#00FFCC]/10 hover:bg-[#00FFCC]/20 rounded-full border border-[#00FFCC]/30 transition-colors text-sm font-medium shrink-0"
+            className="flex items-center gap-2 px-4 py-2 text-[#4FC1B2] bg-[#4FC1B2]/10 hover:bg-[#4FC1B2]/20 rounded-full border border-[#4FC1B2]/30 transition-colors text-sm font-medium shrink-0"
             title="Descargar respaldo de la base de datos"
           >
             <Download className="w-4 h-4" />
             <span className="hidden md:inline">Respaldo</span>
           </button>
-          <div className="flex bg-[#141414] rounded-full p-1 shadow-lg border border-[#333333] shrink-0">
+          <div className="flex bg-[#16301F] rounded-full p-1 shadow-lg border border-[#2E5038] shrink-0">
             <button
               onClick={() => handleTabChange("list")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all",
-                activeTab === "list" ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "list" ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               Solicitudes
@@ -849,7 +849,7 @@ export default function Admin() {
               onClick={() => handleTabChange("agenda")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all",
-                activeTab === "agenda" ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "agenda" ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               Agenda
@@ -858,7 +858,7 @@ export default function Admin() {
               onClick={() => handleTabChange("design")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all",
-                activeTab === "design" ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "design" ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               Diseño
@@ -867,7 +867,7 @@ export default function Admin() {
               onClick={() => handleTabChange("dashboard")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all",
-                activeTab === "dashboard" ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "dashboard" ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               Dashboard
@@ -876,7 +876,7 @@ export default function Admin() {
               onClick={() => handleTabChange("availability")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1",
-                activeTab === "availability" ? "bg-[#FFCC00] text-black shadow-[0_0_10px_rgba(255,204,0,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "availability" ? "bg-[#E8826F] text-black shadow-[0_0_10px_rgba(232,130,111,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               <CalendarIcon className="w-3.5 h-3.5" />
@@ -886,7 +886,7 @@ export default function Admin() {
               onClick={() => handleTabChange("ponentes")}
               className={cn(
                 "px-5 py-2 rounded-full text-xs font-medium transition-all",
-                activeTab === "ponentes" ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]" : "text-[#A0A0A0] hover:text-white"
+                activeTab === "ponentes" ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]" : "text-[#B9C4B6] hover:text-white"
               )}
             >
               Ponentes
@@ -895,7 +895,7 @@ export default function Admin() {
 
           <button
             onClick={handleLogout}
-            className="hidden md:flex items-center gap-2 px-4 py-2 text-[#A0A0A0] hover:text-white bg-[#141414] hover:bg-[#1A1A1A] rounded-full border border-[#333333] transition-colors text-sm font-medium shrink-0"
+            className="hidden md:flex items-center gap-2 px-4 py-2 text-[#B9C4B6] hover:text-white bg-[#16301F] hover:bg-[#1C3A26] rounded-full border border-[#2E5038] transition-colors text-sm font-medium shrink-0"
           >
             <LogOut className="w-4 h-4" />
             Salir
@@ -912,42 +912,42 @@ export default function Admin() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {activeTab === "dashboard" ? (
           <div className="lg:col-span-3 space-y-6">
-            <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-4 sm:p-6">
+            <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] p-4 sm:p-6">
               <h2 className="text-xl font-serif font-bold text-white mb-3 sm:mb-4">Dashboard de Comunidad</h2>
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                <div className="bg-[#0A0A0A] p-2.5 sm:p-4 rounded-xl border border-[#333333] flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#00FFCC]/10 flex items-center justify-center shrink-0">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#00FFCC]" />
+                <div className="bg-[#0F2016] p-2.5 sm:p-4 rounded-xl border border-[#2E5038] flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#4FC1B2]/10 flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#4FC1B2]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#00FFCC] leading-none">{subscribers.length}</p>
-                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider leading-tight mt-1">
+                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#4FC1B2] leading-none">{subscribers.length}</p>
+                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider leading-tight mt-1">
                       <span className="sm:hidden">Regist.</span>
                       <span className="hidden sm:inline">Registros</span>
                     </h3>
                   </div>
                 </div>
 
-                <div className="bg-[#0A0A0A] p-2.5 sm:p-4 rounded-xl border border-[#333333] flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#FFCC00]/10 flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFCC00]" />
+                <div className="bg-[#0F2016] p-2.5 sm:p-4 rounded-xl border border-[#2E5038] flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#E8826F]/10 flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8826F]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#FFCC00] leading-none">{talks.filter(t => t.status === "pending").length}</p>
-                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider leading-tight mt-1">
+                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#E8826F] leading-none">{talks.filter(t => t.status === "pending").length}</p>
+                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider leading-tight mt-1">
                       <span className="sm:hidden">Pend.</span>
                       <span className="hidden sm:inline">Pendientes</span>
                     </h3>
                   </div>
                 </div>
 
-                <div className="bg-[#0A0A0A] p-2.5 sm:p-4 rounded-xl border border-[#333333] flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#9933FF]/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#9933FF]" />
+                <div className="bg-[#0F2016] p-2.5 sm:p-4 rounded-xl border border-[#2E5038] flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#F2B134]/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#F2B134]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#9933FF] leading-none">{talks.filter(t => t.status === "approved" || t.status === "scheduled").length}</p>
-                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider leading-tight mt-1">
+                    <p className="text-lg sm:text-2xl font-serif font-bold text-[#F2B134] leading-none">{talks.filter(t => t.status === "approved" || t.status === "scheduled").length}</p>
+                    <h3 className="text-[9px] sm:text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider leading-tight mt-1">
                       <span className="sm:hidden">Agend.</span>
                       <span className="hidden sm:inline">Aprob. + Agend.</span>
                     </h3>
@@ -957,13 +957,13 @@ export default function Admin() {
             </div>
 
             {/* INICIO DE DIRECTORIO (antes CONTACTOS) */}
-            <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6">
+            <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] p-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h2 className="text-xl font-serif font-bold text-white">Directorio de Contactos y Artistas</h2>
                 <button
                   onClick={() => setShowContactForm(!showContactForm)}
                   className={cn("px-4 py-2 rounded-xl text-sm font-bold transition-colors w-full sm:w-auto",
-                    showContactForm ? "bg-[#333333] text-white" : "bg-[#00FFCC] text-black shadow-[0_0_15px_rgba(0,255,204,0.3)] hover:bg-[#00CCAA]"
+                    showContactForm ? "bg-[#2E5038] text-white" : "bg-[#4FC1B2] text-black shadow-[0_0_15px_rgba(79,193,178,0.3)] hover:bg-[#3BA99B]"
                   )}
                 >
                   {showContactForm ? "Cancelar" : "+ Nuevo Contacto"}
@@ -971,36 +971,36 @@ export default function Admin() {
               </div>
 
               {showContactForm && (
-                <form onSubmit={handleSaveContact} className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] mb-8 space-y-4">
+                <form onSubmit={handleSaveContact} className="bg-[#0F2016] p-6 rounded-xl border border-[#2E5038] mb-8 space-y-4">
                   <h3 className="text-lg font-bold text-white mb-2">Nuevo Contacto</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre / Proyecto *</label>
-                      <input type="text" required value={newContact.name} onChange={(e) => setNewContact({ ...newContact, name: e.target.value })} className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Nombre / Proyecto *</label>
+                      <input type="text" required value={newContact.name} onChange={(e) => setNewContact({ ...newContact, name: e.target.value })} className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Especialidad o Tipo</label>
-                      <input type="text" value={newContact.type} onChange={(e) => setNewContact({ ...newContact, type: e.target.value })} placeholder="Ej. Audiovisual, Teatro" className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Especialidad o Tipo</label>
+                      <input type="text" value={newContact.type} onChange={(e) => setNewContact({ ...newContact, type: e.target.value })} placeholder="Ej. Audiovisual, Teatro" className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Persona de Contacto</label>
-                      <input type="text" value={newContact.contact_person} onChange={(e) => setNewContact({ ...newContact, contact_person: e.target.value })} className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Persona de Contacto</label>
+                      <input type="text" value={newContact.contact_person} onChange={(e) => setNewContact({ ...newContact, contact_person: e.target.value })} className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Teléfono</label>
-                      <input type="text" value={newContact.phone} onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })} className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Teléfono</label>
+                      <input type="text" value={newContact.phone} onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })} className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Redes Sociales (Link)</label>
-                      <input type="url" value={newContact.social_media} onChange={(e) => setNewContact({ ...newContact, social_media: e.target.value })} className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Redes Sociales (Link)</label>
+                      <input type="url" value={newContact.social_media} onChange={(e) => setNewContact({ ...newContact, social_media: e.target.value })} className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Notas / Observaciones</label>
-                      <textarea value={newContact.notes} onChange={(e) => setNewContact({ ...newContact, notes: e.target.value })} className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm h-20 resize-none"></textarea>
+                      <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Notas / Observaciones</label>
+                      <textarea value={newContact.notes} onChange={(e) => setNewContact({ ...newContact, notes: e.target.value })} className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm h-20 resize-none"></textarea>
                     </div>
                   </div>
                   <div className="flex justify-end pt-2">
-                    <button type="submit" disabled={isSavingContact} className="bg-[#9933FF] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(153,51,255,0.3)] hover:bg-[#7A29CC] transition-colors disabled:opacity-50">
+                    <button type="submit" disabled={isSavingContact} className="bg-[#F2B134] text-[#1F1D1A] px-6 py-2 rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(242,177,52,0.3)] hover:bg-[#D99A1E] transition-colors disabled:opacity-50">
                       {isSavingContact ? "Guardando..." : "Guardar Contacto"}
                     </button>
                   </div>
@@ -1009,23 +1009,23 @@ export default function Admin() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {contacts.map(contact => (
-                  <div key={contact.id} className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] flex flex-col justify-between">
+                  <div key={contact.id} className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038] flex flex-col justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-white mb-1">{contact.name}</h3>
-                      {contact.type && <p className="text-[10px] font-bold text-[#00FFCC] uppercase tracking-wider mb-2">{contact.type}</p>}
-                      {contact.contact_person && <p className="text-xs text-[#A0A0A0] mb-1"><span className="font-bold">Contacto:</span> {contact.contact_person}</p>}
-                      {contact.phone && <p className="text-xs text-[#A0A0A0] mb-1"><span className="font-bold">Teléfono:</span> {contact.phone}</p>}
+                      {contact.type && <p className="text-[10px] font-bold text-[#4FC1B2] uppercase tracking-wider mb-2">{contact.type}</p>}
+                      {contact.contact_person && <p className="text-xs text-[#B9C4B6] mb-1"><span className="font-bold">Contacto:</span> {contact.contact_person}</p>}
+                      {contact.phone && <p className="text-xs text-[#B9C4B6] mb-1"><span className="font-bold">Teléfono:</span> {contact.phone}</p>}
                       {contact.social_media && (
-                        <p className="text-xs text-[#A0A0A0] mb-1">
-                          <span className="font-bold">Redes:</span> <a href={contact.social_media} target="_blank" rel="noopener noreferrer" className="text-[#9933FF] hover:underline">Link</a>
+                        <p className="text-xs text-[#B9C4B6] mb-1">
+                          <span className="font-bold">Redes:</span> <a href={contact.social_media} target="_blank" rel="noopener noreferrer" className="text-[#F2B134] hover:underline">Link</a>
                         </p>
                       )}
-                      {contact.notes && <p className="text-xs text-[#A0A0A0] mt-2 italic">"{contact.notes}"</p>}
+                      {contact.notes && <p className="text-xs text-[#B9C4B6] mt-2 italic">"{contact.notes}"</p>}
                     </div>
                   </div>
                 ))}
                 {contacts.length === 0 && (
-                  <div className="col-span-full p-8 text-center text-[#A0A0A0] text-sm italic">
+                  <div className="col-span-full p-8 text-center text-[#B9C4B6] text-sm italic">
                     No hay contactos registrados.
                   </div>
                 )}
@@ -1049,28 +1049,28 @@ export default function Admin() {
           <>
             {/* Left Column - List */}
             <div className={cn("lg:col-span-1 space-y-4", selectedTalk ? "hidden lg:block" : "block")}>
-              <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] overflow-hidden flex flex-col h-[calc(100vh-180px)]">
-                <div className="p-4 border-b border-[#333333] bg-[#0A0A0A] flex justify-between items-center">
+              <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+                <div className="p-4 border-b border-[#2E5038] bg-[#0F2016] flex justify-between items-center">
                   <h2 className="font-serif font-bold text-white flex items-center gap-2 text-sm">
-                    {activeTab === "list" && <Clock className="w-4 h-4 text-[#9933FF]" />}
-                    {activeTab === "design" && <ImageIcon className="w-4 h-4 text-[#FF3366]" />}
+                    {activeTab === "list" && <Clock className="w-4 h-4 text-[#F2B134]" />}
+                    {activeTab === "design" && <ImageIcon className="w-4 h-4 text-[#F0708F]" />}
                     {activeTab === "list" ? "Propuestas" : "Agendadas"}
                   </h2>
                   {activeTab === "list" && (
                     <button
                       onClick={() => handleTabChange("agenda")}
-                      className="text-xs bg-[#00FFCC] text-black px-2.5 py-1.5 rounded-full font-bold hover:bg-[#00CCAA] transition-colors"
+                      className="text-xs bg-[#4FC1B2] text-black px-2.5 py-1.5 rounded-full font-bold hover:bg-[#3BA99B] transition-colors"
                     >
                       + Charla Manual
                     </button>
                   )}
                 </div>
                 {activeTab === "list" && (
-                  <div className="px-4 py-3 bg-[#0A0A0A] border-b border-[#333333]">
+                  <div className="px-4 py-3 bg-[#0F2016] border-b border-[#2E5038]">
                     <select
                       value={listFilter}
                       onChange={(e) => setListFilter(e.target.value as any)}
-                      className="w-full bg-[#141414] border border-[#333333] text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-[#00FFCC] appearance-none cursor-pointer"
+                      className="w-full bg-[#16301F] border border-[#2E5038] text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-[#4FC1B2] appearance-none cursor-pointer"
                     >
                       <option value="pending">Pendientes / Rechazadas / Canceladas</option>
                       <option value="approved">Aprobadas / Agendadas</option>
@@ -1096,10 +1096,10 @@ export default function Admin() {
                       className={cn(
                         "w-full text-left p-4 rounded-xl transition-all border",
                         selectedTalk?.id === talk.id
-                          ? "bg-[#9933FF]/10 border-[#9933FF]/50 shadow-sm"
+                          ? "bg-[#F2B134]/10 border-[#F2B134]/50 shadow-sm"
                           : activeTab === "design" && index === 0 && talk.status === "scheduled"
-                            ? "bg-[#0A0A0A] border-l-4 border-l-green-500 border-t-transparent border-r-transparent border-b-transparent hover:bg-[#1A1A1A]"
-                            : "bg-[#0A0A0A] border-transparent hover:border-[#333333] hover:bg-[#1A1A1A]"
+                            ? "bg-[#0F2016] border-l-4 border-l-green-500 border-t-transparent border-r-transparent border-b-transparent hover:bg-[#1C3A26]"
+                            : "bg-[#0F2016] border-transparent hover:border-[#2E5038] hover:bg-[#1C3A26]"
                       )}
                     >
                       {activeTab === "design" && index === 0 && talk.status === "scheduled" && (
@@ -1118,11 +1118,11 @@ export default function Admin() {
                       <div className="flex justify-between items-start mb-2">
                         <span className={cn(
                           "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
-                          talk.status === "pending" && "bg-[#FFCC00]/20 text-[#FFCC00] border border-[#FFCC00]/30",
-                          talk.status === "approved" && "bg-[#00FFCC]/20 text-[#00FFCC] border border-[#00FFCC]/30",
-                          talk.status === "rejected" && "bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/30",
-                          talk.status === "scheduled" && "bg-[#9933FF]/20 text-[#9933FF] border border-[#9933FF]/30",
-                          talk.status === "completed" && "bg-[#333333] text-[#A0A0A0] border border-[#444444]",
+                          talk.status === "pending" && "bg-[#E8826F]/20 text-[#E8826F] border border-[#E8826F]/30",
+                          talk.status === "approved" && "bg-[#4FC1B2]/20 text-[#4FC1B2] border border-[#4FC1B2]/30",
+                          talk.status === "rejected" && "bg-[#F0708F]/20 text-[#F0708F] border border-[#F0708F]/30",
+                          talk.status === "scheduled" && "bg-[#F2B134]/20 text-[#F2B134] border border-[#F2B134]/30",
+                          talk.status === "completed" && "bg-[#2E5038] text-[#B9C4B6] border border-[#3B5E45]",
                           talk.status === "cancelled" && "bg-[#FF8A33]/15 text-[#FF8A33] border border-[#FF8A33]/30 line-through"
                         )}>
                           {talk.status === "pending" ? "Pendiente" :
@@ -1131,17 +1131,17 @@ export default function Admin() {
                                 talk.status === "scheduled" ? "Agendada" :
                                   talk.status === "cancelled" ? "Cancelada" : "Completada"}
                         </span>
-                        <span className="text-[10px] text-[#A0A0A0] flex items-center gap-2">
-                          <span className="font-mono text-[#00FFCC]">#{String(talk.id).padStart(4, '0')}</span>
+                        <span className="text-[10px] text-[#B9C4B6] flex items-center gap-2">
+                          <span className="font-mono text-[#4FC1B2]">#{String(talk.id).padStart(4, '0')}</span>
                           <span>{activeTab === "list" ? (talk.created_at ? safeFormatDate(talk.created_at, "dd MMM") : "N/A") : (talk.scheduled_date ? safeFormatDate(talk.scheduled_date, "dd MMM yyyy") : "Sin Fecha")}</span>
                         </span>
                       </div>
                       <h3 className="font-bold text-white text-sm line-clamp-1">{talk.title}</h3>
-                      <p className="text-xs text-[#A0A0A0] line-clamp-1 mt-1">{talk.speaker_name}</p>
+                      <p className="text-xs text-[#B9C4B6] line-clamp-1 mt-1">{talk.speaker_name}</p>
                     </button>
                   ))}
                   {filteredTalks.length === 0 && (
-                    <div className="p-8 text-center text-[#A0A0A0] text-sm italic">
+                    <div className="p-8 text-center text-[#B9C4B6] text-sm italic">
                       No hay charlas en esta categoría.
                     </div>
                   )}
@@ -1152,10 +1152,10 @@ export default function Admin() {
             {/* Right Column - Details / Actions */}
             <div className={cn("lg:col-span-2", !selectedTalk ? "hidden lg:block" : "block")}>
               {selectedTalk ? (
-                <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6 md:p-8 h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar relative">
+                <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] p-6 md:p-8 h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar relative">
                   <button
                     onClick={() => setSelectedTalk(null)}
-                    className="lg:hidden mb-6 flex items-center gap-2 text-[#A0A0A0] hover:text-white text-sm font-medium transition-colors"
+                    className="lg:hidden mb-6 flex items-center gap-2 text-[#B9C4B6] hover:text-white text-sm font-medium transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a la lista
@@ -1163,15 +1163,15 @@ export default function Admin() {
 
                   {activeTab === "design" ? (
                     <div className="space-y-6">
-                      <div className="flex justify-between items-center border-b border-[#333333] pb-4">
+                      <div className="flex justify-between items-center border-b border-[#2E5038] pb-4">
                         <h2 className="text-xl font-serif font-bold text-white flex items-center gap-2">
-                          <ImageIcon className="w-5 h-5 text-[#FF3366]" />
+                          <ImageIcon className="w-5 h-5 text-[#F0708F]" />
                           Generador de Post
                         </h2>
                         <button
                           onClick={downloadPoster}
                           disabled={isGeneratingPoster}
-                          className="flex items-center gap-2 px-4 py-2 bg-[#FF3366] text-white rounded-full hover:bg-[#FF1A53] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(255,51,102,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 px-4 py-2 bg-[#F0708F] text-[#1F1D1A] rounded-full hover:bg-[#E85C7E] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(240,112,143,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isGeneratingPoster ? (
                             <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1183,10 +1183,10 @@ export default function Admin() {
                       </div>
 
                       {/* Flyer Upload Section */}
-                      <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] space-y-4 mb-6">
+                      <div className="bg-[#0F2016] p-6 rounded-xl border border-[#2E5038] space-y-4 mb-6">
                         <div className="flex justify-between items-center">
                           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
+                            <ImageIcon className="w-4 h-4 text-[#E8826F]" />
                             Flyer Promocional (Opcional)
                           </h3>
                           {editFlyerImageUrl && selectedTalk?.flyer_image_url && (
@@ -1194,7 +1194,7 @@ export default function Admin() {
                               href={selectedTalk.flyer_image_url} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-xs text-[#00FFCC] hover:underline"
+                              className="text-xs text-[#4FC1B2] hover:underline"
                             >
                               Ver flyer actual
                             </a>
@@ -1202,17 +1202,17 @@ export default function Admin() {
                         </div>
 
                         {selectedTalk?.flyer_image_url && (
-                          <div className="flex justify-center bg-[#141414] p-4 rounded-lg">
+                          <div className="flex justify-center bg-[#16301F] p-4 rounded-lg">
                             <img 
                               src={selectedTalk.flyer_image_url} 
                               alt="Flyer preview"
-                              className="max-h-64 rounded-lg border border-[#333333] object-contain"
+                              className="max-h-64 rounded-lg border border-[#2E5038] object-contain"
                             />
                           </div>
                         )}
 
                         <div>
-                          <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">
+                          <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">
                             URL del Flyer (Google Drive, Cloudinary, etc.)
                           </label>
                           <input
@@ -1220,9 +1220,9 @@ export default function Admin() {
                             value={editFlyerImageUrl}
                             onChange={(e) => setEditFlyerImageUrl(e.target.value)}
                             placeholder="https://drive.google.com/file/d/... o URL directa"
-                            className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm"
+                            className="w-full px-4 py-3 bg-[#16301F] border border-[#2E5038] rounded-lg focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm"
                           />
-                          <p className="text-xs text-[#A0A0A0] mt-2">
+                          <p className="text-xs text-[#B9C4B6] mt-2">
                             💡 Este flyer se incluirá en el mensaje de WhatsApp. Sube la imagen a Drive/Cloudinary y pega el enlace público aquí.
                           </p>
                         </div>
@@ -1230,30 +1230,30 @@ export default function Admin() {
                         <button
                           onClick={handleSaveFlyer}
                           disabled={isSavingDetails}
-                          className="w-full py-2.5 bg-[#00FFCC] text-black rounded-xl font-bold hover:bg-[#00CCAA] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(0,255,204,0.3)]"
+                          className="w-full py-2.5 bg-[#4FC1B2] text-black rounded-xl font-bold hover:bg-[#3BA99B] transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(79,193,178,0.3)]"
                         >
                           {isSavingDetails ? "Guardando..." : "Guardar Flyer"}
                         </button>
                       </div>
 
                       {/* Poster Preview Area */}
-                      <div className="flex justify-center bg-[#0A0A0A] p-6 rounded-xl border border-[#333333] overflow-hidden">
+                      <div className="flex justify-center bg-[#0F2016] p-6 rounded-xl border border-[#2E5038] overflow-hidden">
                         <TalkPoster talk={selectedTalk} formatDate={safeFormatDate} ref={posterRef} />
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#333333] pb-5 gap-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#2E5038] pb-5 gap-4">
                         <div className="flex-1">
                           <div className="flex justify-between items-start gap-4">
                             <h2 className="text-2xl font-serif font-bold text-white mb-1.5 leading-tight">{selectedTalk.title}</h2>
-                            <span className="font-mono text-[#00FFCC] text-xs bg-[#00FFCC]/10 px-2 py-1 rounded-md border border-[#00FFCC]/20 whitespace-nowrap">
+                            <span className="font-mono text-[#4FC1B2] text-xs bg-[#4FC1B2]/10 px-2 py-1 rounded-md border border-[#4FC1B2]/20 whitespace-nowrap">
                               Folio #{String(selectedTalk.id).padStart(4, '0')}
                             </span>
                           </div>
-                          <p className="text-[#A0A0A0] text-sm flex items-center gap-2">
-                            <span className="font-medium text-[#E0E0E0]">{selectedTalk.speaker_name}</span>
-                            <span className="w-1 h-1 bg-[#FFCC00] rounded-full" />
+                          <p className="text-[#B9C4B6] text-sm flex items-center gap-2">
+                            <span className="font-medium text-[#EAE6DA]">{selectedTalk.speaker_name}</span>
+                            <span className="w-1 h-1 bg-[#E8826F] rounded-full" />
                             <span className="text-xs">
                               {selectedTalk.created_at ? safeFormatDate(selectedTalk.created_at, "d 'de' MMM, yyyy") : "N/A"}
                             </span>
@@ -1267,7 +1267,7 @@ export default function Admin() {
                                 <select
                                   value={selectedTalk.category || "General"}
                                   onChange={(e) => updateTalk(selectedTalk.id, { category: e.target.value })}
-                                  className="bg-[#141414] border border-[#333333] rounded-full px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#00FFCC] transition-colors appearance-none"
+                                  className="bg-[#16301F] border border-[#2E5038] rounded-full px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#4FC1B2] transition-colors appearance-none"
                                 >
                                   <option value="General">General</option>
                                   <option value="Biología">Biología</option>
@@ -1279,14 +1279,14 @@ export default function Admin() {
                               </div>
                               <button
                                 onClick={() => updateStatus(selectedTalk.id, "approved")}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00FFCC]/20 text-[#00FFCC] border border-[#00FFCC]/50 rounded-full hover:bg-[#00FFCC]/30 transition-colors text-xs font-medium"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4FC1B2]/20 text-[#4FC1B2] border border-[#4FC1B2]/50 rounded-full hover:bg-[#4FC1B2]/30 transition-colors text-xs font-medium"
                               >
                                 <Check className="w-3.5 h-3.5" />
                                 Aprobar
                               </button>
                               <button
                                 onClick={() => updateStatus(selectedTalk.id, "rejected")}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3366]/10 text-[#FF3366] border border-[#FF3366]/30 rounded-full hover:bg-[#FF3366]/20 transition-colors text-xs font-medium"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F0708F]/10 text-[#F0708F] border border-[#F0708F]/30 rounded-full hover:bg-[#F0708F]/20 transition-colors text-xs font-medium"
                               >
                                 <X className="w-3.5 h-3.5" />
                                 Rechazar
@@ -1300,7 +1300,7 @@ export default function Admin() {
                                   deleteTalk(selectedTalk.id);
                                 }
                               }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3366] text-white rounded-full hover:bg-[#FF1A53] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(255,51,102,0.3)]"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F0708F] text-[#1F1D1A] rounded-full hover:bg-[#E85C7E] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(240,112,143,0.3)]"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               Eliminar
@@ -1311,14 +1311,14 @@ export default function Admin() {
                             <>
                               <button
                                 onClick={() => handleTabChange("design", true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3366] text-white rounded-full hover:bg-[#FF1A53] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(255,51,102,0.3)]"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F0708F] text-[#1F1D1A] rounded-full hover:bg-[#E85C7E] transition-colors text-xs font-medium shadow-[0_0_10px_rgba(240,112,143,0.3)]"
                               >
                                 <ImageIcon className="w-3.5 h-3.5" />
                                 Diseño
                               </button>
                               <button
                                 onClick={() => updateStatus(selectedTalk.id, "completed")}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00FFCC] text-black rounded-full hover:bg-[#00CCAA] transition-colors text-xs font-bold shadow-[0_0_10px_rgba(0,255,204,0.3)]"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4FC1B2] text-black rounded-full hover:bg-[#3BA99B] transition-colors text-xs font-bold shadow-[0_0_10px_rgba(79,193,178,0.3)]"
                               >
                                 <Check className="w-3.5 h-3.5" />
                                 Marcar Completada
@@ -1332,22 +1332,22 @@ export default function Admin() {
                         <div className="md:col-span-2 space-y-5">
                           {selectedTalk.status === "completed" && (
                             <div>
-                              <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-[#FFCC00]" />
+                              <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4 text-[#E8826F]" />
                                 Fotos del Evento
                               </h3>
-                              <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333]">
-                                <p className="text-sm text-[#A0A0A0] mb-4">Sube fotos del evento para mostrarlas en la cartelera.</p>
+                              <div className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038]">
+                                <p className="text-sm text-[#B9C4B6] mb-4">Sube fotos del evento para mostrarlas en la cartelera.</p>
                                 <input
                                   type="file"
                                   multiple
                                   accept="image/*"
-                                  className="block w-full text-sm text-[#A0A0A0]
+                                  className="block w-full text-sm text-[#B9C4B6]
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-full file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-[#FFCC00] file:text-black
-                                hover:file:bg-[#E6B800]
+                                file:bg-[#E8826F] file:text-black
+                                hover:file:bg-[#D9705C]
                                 cursor-pointer"
                                   onChange={async (e) => {
                                     if (!e.target.files || e.target.files.length === 0) return;
@@ -1380,7 +1380,7 @@ export default function Admin() {
                                       try {
                                         const photos = JSON.parse(selectedTalk.event_photos);
                                         return photos.map((url: string, i: number) => (
-                                          <img key={i} src={url} alt={`Event photo ${i + 1}`} className="w-full h-24 object-cover rounded-lg border border-[#333333]" />
+                                          <img key={i} src={url} alt={`Event photo ${i + 1}`} className="w-full h-24 object-cover rounded-lg border border-[#2E5038]" />
                                         ));
                                       } catch (e) {
                                         return null;
@@ -1393,15 +1393,15 @@ export default function Admin() {
                           )}
                           {selectedTalk.status === "approved" && (
                             <div>
-                              <h3 className="text-xs font-bold text-[#00FFCC] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-[#00FFCC]" />
+                              <h3 className="text-xs font-bold text-[#4FC1B2] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-[#4FC1B2]" />
                                 Agendar Propuesta
                               </h3>
-                              <div className="bg-[#0A0A0A] p-6 rounded-xl border border-[#00FFCC]/50 shadow-[0_0_15px_rgba(0,255,204,0.1)]">
-                                <p className="text-sm text-[#E0E0E0] mb-4">Esta propuesta está aprobada. Selecciona una fecha y hora para agendarla oficialmente.</p>
+                              <div className="bg-[#0F2016] p-6 rounded-xl border border-[#4FC1B2]/50 shadow-[0_0_15px_rgba(79,193,178,0.1)]">
+                                <p className="text-sm text-[#EAE6DA] mb-4">Esta propuesta está aprobada. Selecciona una fecha y hora para agendarla oficialmente.</p>
                                 <input
                                   type="datetime-local"
-                                  className="w-full px-4 py-3 bg-[#141414] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] transition-all outline-none text-white text-sm"
+                                  className="w-full px-4 py-3 bg-[#16301F] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#4FC1B2] focus:border-[#4FC1B2] transition-all outline-none text-white text-sm"
                                   value={selectedTalk.scheduled_date ? selectedTalk.scheduled_date.slice(0, 16) : ""}
                                   onChange={(e) => {
                                     if (e.target.value) {
@@ -1409,21 +1409,21 @@ export default function Admin() {
                                     }
                                   }}
                                 />
-                                <p className="text-xs text-[#A0A0A0] mt-3 italic">
+                                <p className="text-xs text-[#B9C4B6] mt-3 italic">
                                   Al asignar la fecha, la charla se moverá a la categoría "Agendadas" en la sección de Diseño, y será visible en la Cartelera para el público.
                                 </p>
                               </div>
                             </div>
                           )}
                           <div>
-                            <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Resumen (Abstract)</h3>
-                            <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] text-[#E0E0E0] text-sm leading-relaxed">
+                            <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Resumen (Abstract)</h3>
+                            <div className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038] text-[#EAE6DA] text-sm leading-relaxed">
                               {selectedTalk.abstract}
                             </div>
                           </div>
                           <div>
-                            <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Biografía del Ponente</h3>
-                            <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] text-[#E0E0E0] text-sm leading-relaxed">
+                            <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Biografía del Ponente</h3>
+                            <div className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038] text-[#EAE6DA] text-sm leading-relaxed">
                               {selectedTalk.speaker_bio}
                             </div>
                           </div>
@@ -1431,22 +1431,22 @@ export default function Admin() {
                           {/* Fechas Preferidas */}
                           {(selectedTalk.preferred_date_1 || selectedTalk.preferred_date_2) && (
                             <div>
-                              <h3 className="text-xs font-bold text-[#00FFCC] uppercase tracking-wider mb-2 flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-[#00FFCC]" />
+                              <h3 className="text-xs font-bold text-[#4FC1B2] uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-[#4FC1B2]" />
                                 Fechas Sugeridas por el Ponente
                               </h3>
-                              <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#00FFCC]/20 space-y-2">
+                              <div className="bg-[#0F2016] p-4 rounded-xl border border-[#4FC1B2]/20 space-y-2">
                                 {selectedTalk.preferred_date_1 && (
-                                  <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
-                                    <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
-                                    <span className="font-medium text-[#00FFCC]">Opción 1:</span>
+                                  <div className="flex items-center gap-2 text-sm text-[#EAE6DA]">
+                                    <span className="w-2 h-2 rounded-full bg-[#4FC1B2]" />
+                                    <span className="font-medium text-[#4FC1B2]">Opción 1:</span>
                                     <span>{safeFormatDate(selectedTalk.preferred_date_1, "EEEE d 'de' MMMM, yyyy")}</span>
                                   </div>
                                 )}
                                 {selectedTalk.preferred_date_2 && (
-                                  <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
-                                    <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
-                                    <span className="font-medium text-[#00FFCC]">Opción 2:</span>
+                                  <div className="flex items-center gap-2 text-sm text-[#EAE6DA]">
+                                    <span className="w-2 h-2 rounded-full bg-[#4FC1B2]" />
+                                    <span className="font-medium text-[#4FC1B2]">Opción 2:</span>
                                     <span>{safeFormatDate(selectedTalk.preferred_date_2, "EEEE d 'de' MMMM, yyyy")}</span>
                                   </div>
                                 )}
@@ -1456,46 +1456,46 @@ export default function Admin() {
 
                           {/* Contact Info */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] space-y-3">
-                              <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider border-b border-[#333333] pb-2">Contacto</h3>
+                            <div className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038] space-y-3">
+                              <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider border-b border-[#2E5038] pb-2">Contacto</h3>
                               {selectedTalk.email && (
-                                <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
-                                  <Mail className="w-4 h-4 text-[#FFCC00]" />
-                                  <a href={`mailto:${selectedTalk.email}`} className="hover:text-[#FFCC00] transition-colors">{selectedTalk.email}</a>
+                                <div className="flex items-center gap-2 text-sm text-[#EAE6DA]">
+                                  <Mail className="w-4 h-4 text-[#E8826F]" />
+                                  <a href={`mailto:${selectedTalk.email}`} className="hover:text-[#E8826F] transition-colors">{selectedTalk.email}</a>
                                 </div>
                               )}
                               {selectedTalk.phone && (
-                                <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
-                                  <Phone className="w-4 h-4 text-[#FFCC00]" />
-                                  <a href={`tel:${selectedTalk.phone}`} className="hover:text-[#FFCC00] transition-colors">{selectedTalk.phone}</a>
+                                <div className="flex items-center gap-2 text-sm text-[#EAE6DA]">
+                                  <Phone className="w-4 h-4 text-[#E8826F]" />
+                                  <a href={`tel:${selectedTalk.phone}`} className="hover:text-[#E8826F] transition-colors">{selectedTalk.phone}</a>
                                 </div>
                               )}
                               {selectedTalk.social_media && (
-                                <div className="flex items-center gap-2 text-sm text-[#E0E0E0]">
-                                  <Instagram className="w-4 h-4 text-[#FFCC00]" />
+                                <div className="flex items-center gap-2 text-sm text-[#EAE6DA]">
+                                  <Instagram className="w-4 h-4 text-[#E8826F]" />
                                   <span>{selectedTalk.social_media}</span>
                                 </div>
                               )}
                             </div>
 
                             {selectedTalk.technical_needs && (
-                              <div className="bg-[#0A0A0A] p-4 rounded-xl border border-[#333333] space-y-2">
-                                <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider border-b border-[#333333] pb-2 flex items-center gap-2">
-                                  <MonitorPlay className="w-4 h-4 text-[#FF3366]" />
+                              <div className="bg-[#0F2016] p-4 rounded-xl border border-[#2E5038] space-y-2">
+                                <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider border-b border-[#2E5038] pb-2 flex items-center gap-2">
+                                  <MonitorPlay className="w-4 h-4 text-[#F0708F]" />
                                   Necesidades Técnicas
                                 </h3>
-                                <p className="text-sm text-[#E0E0E0]">{selectedTalk.technical_needs}</p>
+                                <p className="text-sm text-[#EAE6DA]">{selectedTalk.technical_needs}</p>
                               </div>
                             )}
                           </div>
                         </div>
                         <div className="space-y-5">
-                          <div className="bg-[#141414] p-5 rounded-2xl border border-[#333333] space-y-4">
-                            <div className="flex justify-between items-center border-b border-[#333333] pb-2">
-                              <h3 className="text-sm font-bold text-[#00FFCC] uppercase tracking-wider flex items-center gap-2">
+                          <div className="bg-[#16301F] p-5 rounded-2xl border border-[#2E5038] space-y-4">
+                            <div className="flex justify-between items-center border-b border-[#2E5038] pb-2">
+                              <h3 className="text-sm font-bold text-[#4FC1B2] uppercase tracking-wider flex items-center gap-2">
                                 <Edit3 className="w-4 h-4" /> Edición Avanzada
                               </h3>
-                              <button onClick={() => setIsEditingAll(!isEditingAll)} className="text-xs text-[#A0A0A0] hover:text-white underline">
+                              <button onClick={() => setIsEditingAll(!isEditingAll)} className="text-xs text-[#B9C4B6] hover:text-white underline">
                                 {isEditingAll ? "Cancelar" : "Modificar Datos Base"}
                               </button>
                             </div>
@@ -1503,20 +1503,20 @@ export default function Admin() {
                             {isEditingAll && (
                               <div className="space-y-3">
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de la Charla</label>
-                                  <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] focus:border-[#00FFCC] outline-none text-white text-sm" />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Título de la Charla</label>
+                                  <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] focus:border-[#4FC1B2] outline-none text-white text-sm" />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Categoría</label>
-                                  <input type="text" value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Categoría</label>
+                                  <input type="text" value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm" />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombres de Expositores</label>
-                                  <input type="text" value={editSpeakerName} onChange={(e) => setEditSpeakerName(e.target.value)} className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Nombres de Expositores</label>
+                                  <input type="text" value={editSpeakerName} onChange={(e) => setEditSpeakerName(e.target.value)} className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm" />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Enlace de Drive / URL Foto</label>
-                                  <input type="text" value={editSpeakerPhotoUrl} onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)} placeholder="Pegar enlace de Google Drive..." className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Enlace de Drive / URL Foto</label>
+                                  <input type="text" value={editSpeakerPhotoUrl} onChange={(e) => setEditSpeakerPhotoUrl(e.target.value)} placeholder="Pegar enlace de Google Drive..." className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm" />
                                 </div>
                               </div>
                             )}
@@ -1524,45 +1524,45 @@ export default function Admin() {
                             {(selectedTalk.status === "scheduled" || selectedTalk.status === "completed") && (
                               <>
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Enlace de Transmisión</label>
-                                  <input type="url" value={editTransmissionUrl} onChange={(e) => setEditTransmissionUrl(e.target.value)} className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm" placeholder="https://..." />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Enlace de Transmisión</label>
+                                  <input type="url" value={editTransmissionUrl} onChange={(e) => setEditTransmissionUrl(e.target.value)} className="w-full px-4 py-2.5 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm" placeholder="https://..." />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Resumen Final (Opcional)</label>
-                                  <textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-[#00FFCC] outline-none text-white text-sm min-h-[100px]" placeholder="Resumen..." />
+                                  <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Resumen Final (Opcional)</label>
+                                  <textarea value={editSummary} onChange={(e) => setEditSummary(e.target.value)} className="w-full px-4 py-2.5 bg-[#0F2016] border border-[#2E5038] rounded-lg focus:ring-[#4FC1B2] outline-none text-white text-sm min-h-[100px]" placeholder="Resumen..." />
                                 </div>
                               </>
                             )}
 
-                            <button onClick={handleSaveDetails} disabled={isSavingDetails} className="w-full py-2.5 bg-[#333333] hover:bg-[#444444] text-white rounded-lg font-bold transition-colors disabled:opacity-50 text-sm">
+                            <button onClick={handleSaveDetails} disabled={isSavingDetails} className="w-full py-2.5 bg-[#2E5038] hover:bg-[#3B5E45] text-white rounded-lg font-bold transition-colors disabled:opacity-50 text-sm">
                               {isSavingDetails ? "Guardando..." : "Guardar Cambios"}
                             </button>
                           </div>
 
                           <div>
-                            <h3 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Foto / Portada</h3>
+                            <h3 className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Foto / Portada</h3>
                             {selectedTalk.speaker_photo_url ? (
                               <img
                                 src={selectedTalk.speaker_photo_url}
                                 alt={selectedTalk.speaker_name}
-                                className="w-full aspect-square object-cover rounded-xl border border-[#333333] shadow-md"
+                                className="w-full aspect-square object-cover rounded-xl border border-[#2E5038] shadow-md"
                               />
                             ) : (
-                              <div className="w-full aspect-square bg-[#0A0A0A] rounded-xl border border-[#333333] flex items-center justify-center text-[#333333]">
+                              <div className="w-full aspect-square bg-[#0F2016] rounded-xl border border-[#2E5038] flex items-center justify-center text-[#2E5038]">
                                 <ImageIcon className="w-10 h-10" />
                               </div>
                             )}
                           </div>
 
                           {selectedTalk.scheduled_date && (
-                            <div className="bg-[#9933FF]/10 border border-[#9933FF]/30 p-5 rounded-xl shadow-lg relative overflow-hidden">
-                              <div className="absolute top-0 right-0 w-24 h-24 bg-[#9933FF] rounded-full mix-blend-screen filter blur-[40px] opacity-20 pointer-events-none" />
-                              <h3 className="text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#9933FF]">Fecha Programada</h3>
+                            <div className="bg-[#F2B134]/10 border border-[#F2B134]/30 p-5 rounded-xl shadow-lg relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-24 h-24 bg-[#F2B134] rounded-full mix-blend-screen filter blur-[40px] opacity-20 pointer-events-none" />
+                              <h3 className="text-[10px] font-bold uppercase tracking-wider mb-1.5 text-[#F2B134]">Fecha Programada</h3>
                               <p className="text-base font-serif font-bold text-white">
                                 {safeFormatDate(selectedTalk.scheduled_date, "EEEE d 'de' MMMM")}
                               </p>
-                              <p className="text-[#E0E0E0] text-sm mt-0.5 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-[#9933FF]" />
+                              <p className="text-[#EAE6DA] text-sm mt-0.5 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-[#F2B134]" />
                                 {safeFormatDate(selectedTalk.scheduled_date, "HH:mm")} hrs
                               </p>
                             </div>
@@ -1573,14 +1573,14 @@ export default function Admin() {
                   )}
                 </div>
               ) : (
-                <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] h-[calc(100vh-180px)] flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#9933FF] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
-                  <div className="w-16 h-16 bg-[#0A0A0A] border border-[#333333] rounded-full flex items-center justify-center text-[#9933FF] mb-5 relative z-10">
+                <div className="bg-[#16301F] rounded-2xl shadow-lg border border-[#2E5038] h-[calc(100vh-180px)] flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F2B134] rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none" />
+                  <div className="w-16 h-16 bg-[#0F2016] border border-[#2E5038] rounded-full flex items-center justify-center text-[#F2B134] mb-5 relative z-10">
                     {activeTab === "list" && <Coffee className="w-8 h-8" />}
                     {activeTab === "design" && <ImageIcon className="w-8 h-8" />}
                   </div>
                   <h2 className="text-xl font-serif font-bold text-white mb-2 relative z-10">{getPlaceholderTitle()}</h2>
-                  <p className="text-[#A0A0A0] text-sm max-w-sm relative z-10">
+                  <p className="text-[#B9C4B6] text-sm max-w-sm relative z-10">
                     {getPlaceholderText()}
                   </p>
                 </div>

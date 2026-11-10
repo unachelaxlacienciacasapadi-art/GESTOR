@@ -210,22 +210,22 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
 
   return (
     <div className="space-y-6 animate-fade-in relative z-10 w-full">
-      <div className="bg-[#141414] rounded-2xl border border-[#333333] shadow-lg overflow-hidden w-full">
-        <div className="p-4 border-b border-[#333333] flex justify-between items-center bg-[#0A0A0A]">
+      <div className="bg-[#16301F] rounded-2xl border border-[#2E5038] shadow-lg overflow-hidden w-full">
+        <div className="p-4 border-b border-[#2E5038] flex justify-between items-center bg-[#0F2016]">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-serif font-bold text-white flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-[#00FFCC]" />
+              <CalendarIcon className="w-5 h-5 text-[#4FC1B2]" />
               Calendario General
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={prevMonth} className="p-2 hover:bg-[#1A1A1A] rounded-full text-[#A0A0A0] hover:text-white transition-colors">
+            <button onClick={prevMonth} className="p-2 hover:bg-[#1C3A26] rounded-full text-[#B9C4B6] hover:text-white transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-serif font-bold text-white capitalize min-w-[150px] text-center">
               {format(currentMonth, "MMMM yyyy", { locale: es })}
             </h2>
-            <button onClick={nextMonth} className="p-2 hover:bg-[#1A1A1A] rounded-full text-[#A0A0A0] hover:text-white transition-colors">
+            <button onClick={nextMonth} className="p-2 hover:bg-[#1C3A26] rounded-full text-[#B9C4B6] hover:text-white transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -233,16 +233,16 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
         
         <div className="overflow-x-auto">
           <div className="min-w-full">
-            <div className="grid grid-cols-7 gap-px bg-[#333333]">
+            <div className="grid grid-cols-7 gap-px bg-[#2E5038]">
               {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
-                <div key={day} className="bg-[#0A0A0A] py-3 text-center text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
+                <div key={day} className="bg-[#0F2016] py-3 text-center text-xs font-bold text-[#B9C4B6] uppercase tracking-wider">
                   {day}
                 </div>
               ))}
 
               {/* Padding empty cells — ISO 8601: semana inicia en lunes */}
               {Array.from({ length: (daysInMonth[0].getDay() + 6) % 7 }).map((_, i) => (
-                <div key={`empty-${i}`} className="bg-[#141414] min-h-[140px]" />
+                <div key={`empty-${i}`} className="bg-[#16301F] min-h-[140px]" />
               ))}
               
               {daysInMonth.map(date => {
@@ -254,19 +254,19 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                   <div 
                     key={date.toISOString()} 
                     onClick={() => handleDayClick(date)}
-                    className={`min-h-[140px] p-2 bg-[#1A1A1A] hover:bg-[#222222] transition-colors cursor-pointer group ${
+                    className={`min-h-[140px] p-2 bg-[#1C3A26] hover:bg-[#22432D] transition-colors cursor-pointer group ${
                       !isCurrentMonth ? 'opacity-40' : ''
-                    } ${today ? 'ring-1 ring-inset ring-[#00FFCC]/50 bg-[#00FFCC]/5' : ''}`}
+                    } ${today ? 'ring-1 ring-inset ring-[#4FC1B2]/50 bg-[#4FC1B2]/5' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-2">
                        <div className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${
-                          today ? 'bg-[#00FFCC] text-black' : 'text-[#A0A0A0]'
+                          today ? 'bg-[#4FC1B2] text-black' : 'text-[#B9C4B6]'
                         }`}>
                           {format(date, 'd')}
                         </div>
                         {dayTalks.length === 0 && (
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus className="w-4 h-4 text-[#A0A0A0]" />
+                            <Plus className="w-4 h-4 text-[#B9C4B6]" />
                           </div>
                         )}
                     </div>
@@ -277,8 +277,8 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                           key={talk.id}
                           className={`w-full text-left p-2 rounded-lg border transition-all shadow-sm ${
                             talk.status === 'completed' 
-                              ? 'bg-[#333333]/50 border-[#444444] text-[#A0A0A0] hover:border-[#666666]' 
-                              : 'bg-[#9933FF]/10 border-[#9933FF]/30 text-[#E0E0E0] hover:border-[#9933FF]/60 hover:bg-[#9933FF]/20'
+                              ? 'bg-[#2E5038]/50 border-[#3B5E45] text-[#B9C4B6] hover:border-[#8A9A8C]' 
+                              : 'bg-[#F2B134]/10 border-[#F2B134]/30 text-[#EAE6DA] hover:border-[#F2B134]/60 hover:bg-[#F2B134]/20'
                           }`}
                         >
                           <div className="flex items-center gap-1.5 mb-1 text-[10px] font-bold opacity-80 uppercase tracking-wider">
@@ -289,7 +289,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                             {talk.title}
                           </div>
                           {talk.speaker_name && (
-                            <div className="text-[10px] mt-1 text-[#A0A0A0] truncate">
+                            <div className="text-[10px] mt-1 text-[#B9C4B6] truncate">
                               {talk.speaker_name}
                             </div>
                           )}
@@ -302,7 +302,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               
               {/* Padding empty cells end — complemento ISO 8601 */}
               {Array.from({ length: (7 - ((daysInMonth[daysInMonth.length - 1].getDay() + 6) % 7)) % 7 }).map((_, i) => (
-                <div key={`empty-end-${i}`} className="bg-[#141414] min-h-[140px]" />
+                <div key={`empty-end-${i}`} className="bg-[#16301F] min-h-[140px]" />
               ))}
             </div>
           </div>
@@ -312,25 +312,25 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
       {/* ASIGNAR / CREAR CHARLA MODAL */}
       {showAssignModal && selectedDate && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#141414] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-[#333333] w-full max-w-lg overflow-hidden animate-slide-up">
-            <div className="flex justify-between items-center p-5 border-b border-[#333333] bg-[#0A0A0A]">
+          <div className="bg-[#16301F] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-[#2E5038] w-full max-w-lg overflow-hidden animate-slide-up">
+            <div className="flex justify-between items-center p-5 border-b border-[#2E5038] bg-[#0F2016]">
               <h3 className="text-lg font-serif font-bold text-white">Agendar Evento</h3>
-              <button onClick={() => setShowAssignModal(false)} className="text-[#A0A0A0] hover:text-white">
+              <button onClick={() => setShowAssignModal(false)} className="text-[#B9C4B6] hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <form onSubmit={handleAssignSubmit} className="p-6 space-y-5">
-              <div className="bg-[#00FFCC]/10 p-3 rounded-xl border border-[#00FFCC]/20 text-center">
-                <p className="text-[#00FFCC] font-bold font-serif text-lg">
+              <div className="bg-[#4FC1B2]/10 p-3 rounded-xl border border-[#4FC1B2]/20 text-center">
+                <p className="text-[#4FC1B2] font-bold font-serif text-lg">
                   {format(selectedDate, "EEEE d 'de' MMMM, yyyy", { locale: es })}
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Asignar una Charla Existente</label>
+                <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Asignar una Charla Existente</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl text-white text-sm outline-none focus:border-[#00FFCC]"
+                  className="w-full px-3 py-2.5 bg-[#0F2016] border border-[#2E5038] rounded-xl text-white text-sm outline-none focus:border-[#4FC1B2]"
                   value={selectedPendingTalk ?? ""}
                   onChange={(e) => setSelectedPendingTalk(e.target.value === "" ? null : e.target.value === "NEW" ? "NEW" : Number(e.target.value))}
                 >
@@ -343,38 +343,38 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               </div>
 
               {selectedPendingTalk === "NEW" && (
-                <div className="space-y-4 p-4 border border-[#333333] rounded-xl bg-[#0A0A0A]">
+                <div className="space-y-4 p-4 border border-[#2E5038] rounded-xl bg-[#0F2016]">
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de Espacio</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Título de Espacio</label>
                     <input 
                       type="text" placeholder="Ej. Espacio Disponible" value={newTalkTitle} onChange={e => setNewTalkTitle(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg text-white text-sm" 
+                      className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg text-white text-sm" 
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre Ponente</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Nombre Ponente</label>
                     <input 
                       type="text" placeholder="Ej. Por Definir" value={newTalkSpeaker} onChange={e => setNewTalkSpeaker(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#141414] border border-[#333333] rounded-lg text-white text-sm" 
+                      className="w-full px-3 py-2 bg-[#16301F] border border-[#2E5038] rounded-lg text-white text-sm" 
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider mb-2">Hora de Inicio</label>
+                <label className="block text-xs font-bold text-[#B9C4B6] uppercase tracking-wider mb-2">Hora de Inicio</label>
                 <input 
                   type="time" 
                   value={timeInput} 
                   onChange={(e) => setTimeInput(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-xl text-white text-sm outline-none focus:border-[#00FFCC]" 
+                  className="w-full px-3 py-2.5 bg-[#0F2016] border border-[#2E5038] rounded-xl text-white text-sm outline-none focus:border-[#4FC1B2]" 
                   required
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#333333] flex justify-end gap-3">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cancelar</button>
-                <button type="submit" disabled={!selectedPendingTalk} className="bg-[#00FFCC] text-black px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#00E6B8] disabled:opacity-50">Confirmar</button>
+              <div className="pt-4 border-t border-[#2E5038] flex justify-end gap-3">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="px-5 py-2 text-sm font-bold text-[#B9C4B6] hover:text-white">Cancelar</button>
+                <button type="submit" disabled={!selectedPendingTalk} className="bg-[#4FC1B2] text-black px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#3BA99B] disabled:opacity-50">Confirmar</button>
               </div>
             </form>
           </div>
@@ -384,20 +384,20 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
       {/* EDIT MODAL */}
       {showEditModal && editingTalk && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#141414] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-[#333333] w-full max-w-lg overflow-hidden animate-slide-up">
-            <div className="flex justify-between items-center p-5 border-b border-[#333333] bg-[#0A0A0A]">
+          <div className="bg-[#16301F] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-[#2E5038] w-full max-w-lg overflow-hidden animate-slide-up">
+            <div className="flex justify-between items-center p-5 border-b border-[#2E5038] bg-[#0F2016]">
               <h3 className="text-lg font-serif font-bold text-white flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#9933FF]" />
+                <Edit3 className="w-5 h-5 text-[#F2B134]" />
                 Propiedades del Evento
               </h3>
-              <button onClick={() => setShowEditModal(false)} className="text-[#A0A0A0] hover:text-white">
+              <button onClick={() => setShowEditModal(false)} className="text-[#B9C4B6] hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <div className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
               {/* Tab Bar */}
-              <div className="flex gap-1 bg-[#0A0A0A] p-1 rounded-xl border border-[#333333]">
+              <div className="flex gap-1 bg-[#0F2016] p-1 rounded-xl border border-[#2E5038]">
                 {[
                   { value: "charla", label: "📋 Charla" },
                   { value: "ponentes", label: "🎤 Ponentes" },
@@ -410,8 +410,8 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                     onClick={() => setActiveModalTab(tab.value)}
                     className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       activeModalTab === tab.value
-                        ? "bg-[#9933FF] text-white shadow-[0_0_10px_rgba(153,51,255,0.4)]"
-                        : "text-[#A0A0A0] hover:text-white"
+                        ? "bg-[#F2B134] text-[#1F1D1A] shadow-[0_0_10px_rgba(242,177,52,0.4)]"
+                        : "text-[#B9C4B6] hover:text-white"
                     }`}
                   >
                     {tab.label}
@@ -424,36 +424,36 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Fecha</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Fecha</label>
                       <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#F2B134] outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Hora</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Hora</label>
                       <input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#F2B134] outline-none text-white text-sm" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Título de la Charla</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Título de la Charla</label>
                     <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl focus:ring-1 focus:ring-[#9933FF] outline-none text-white text-sm" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl focus:ring-1 focus:ring-[#F2B134] outline-none text-white text-sm" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Descripción Corta (máx. 150 caracteres)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Descripción Corta (máx. 150 caracteres)</label>
                     <textarea maxLength={150} rows={2} value={editDescShort} onChange={(e) => setEditDescShort(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm resize-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Descripción Completa</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Descripción Completa</label>
                     <textarea rows={4} value={editAbstract} onChange={(e) => setEditAbstract(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm resize-none" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Categoría</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Categoría</label>
                       <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm appearance-none">
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm appearance-none">
                         <option>General</option>
                         <option>Ciencias Sociales</option>
                         <option>Deportes y Género</option>
@@ -464,9 +464,9 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Institución / Afiliación</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Institución / Afiliación</label>
                       <input type="text" value={editInstitution} onChange={(e) => setEditInstitution(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm" />
                     </div>
                   </div>
                 </div>
@@ -475,44 +475,44 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               {/* TAB 2: PONENTES */}
               {activeModalTab === "ponentes" && (
                 <div className="space-y-3">
-                  <p className="text-xs font-bold text-[#9933FF] uppercase tracking-wider">Ponente Principal</p>
+                  <p className="text-xs font-bold text-[#F2B134] uppercase tracking-wider">Ponente Principal</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Nombre</label>
                       <input type="text" value={editSpeakerName} onChange={(e) => setEditSpeakerName(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Foto (URL Drive/Cloudinary)</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Foto (URL Drive/Cloudinary)</label>
                       <input type="text" placeholder="https://..." value={editPhotoUrl} onChange={(e) => setEditPhotoUrl(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm font-mono" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
                     <textarea maxLength={300} rows={3} value={editSpeakerBio} onChange={(e) => setEditSpeakerBio(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm resize-none" />
                   </div>
                   <hr className="border-white/10" />
-                  <p className="text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
+                  <p className="text-xs font-bold text-[#B9C4B6] uppercase tracking-wider">
                     Segundo Ponente <span className="text-[10px] normal-case font-normal">(opcional)</span>
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Nombre</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Nombre</label>
                       <input type="text" value={editSpeaker2Name} onChange={(e) => setEditSpeaker2Name(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Foto (URL)</label>
+                      <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Foto (URL)</label>
                       <input type="text" placeholder="https://..." value={editSpeaker2Photo} onChange={(e) => setEditSpeaker2Photo(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                        className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm font-mono" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Semblanza (máx. 300 caracteres)</label>
                     <textarea maxLength={300} rows={3} value={editSpeaker2Bio} onChange={(e) => setEditSpeaker2Bio(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm resize-none" />
                   </div>
                 </div>
               )}
@@ -521,19 +521,19 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               {activeModalTab === "multimedia" && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Enlace Drive / URL Póster</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Enlace Drive / URL Póster</label>
                     <input type="text" placeholder="https://drive.google.com/..." value={editPhotoUrl} onChange={(e) => setEditPhotoUrl(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm font-mono" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Video / Transmisión (YouTube u otro)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Video / Transmisión (YouTube u otro)</label>
                     <input type="text" placeholder="https://youtube.com/..." value={editTransmission} onChange={(e) => setEditTransmission(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm font-mono" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Facebook Live (opcional)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Facebook Live (opcional)</label>
                     <input type="text" placeholder="https://facebook.com/..." value={editFacebook} onChange={(e) => setEditFacebook(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm font-mono" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm font-mono" />
                   </div>
                 </div>
               )}
@@ -542,20 +542,20 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               {activeModalTab === "notas" && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-[#A0A0A0] uppercase tracking-wider mb-1">Notas Internas (solo visibles para admin)</label>
+                    <label className="block text-[10px] font-bold text-[#B9C4B6] uppercase tracking-wider mb-1">Notas Internas (solo visibles para admin)</label>
                     <textarea rows={7} value={editAdminNotes} onChange={(e) => setEditAdminNotes(e.target.value)}
                       placeholder="Requerimientos técnicos, acuerdos con el ponente, observaciones de logística..."
-                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-xl outline-none text-white text-sm resize-none" />
+                      className="w-full px-3 py-2 bg-[#0F2016] border border-[#2E5038] rounded-xl outline-none text-white text-sm resize-none" />
                   </div>
                 </div>
               )}
 
               {/* Footer */}
-              <div className="pt-4 border-t border-[#333333] flex flex-wrap gap-3 items-center">
+              <div className="pt-4 border-t border-[#2E5038] flex flex-wrap gap-3 items-center">
                 <button
                   type="button"
                   onClick={() => handleDelete(editingTalk.id)}
-                  className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#FF3366] bg-[#FF3366]/10 hover:bg-[#FF3366]/20 rounded-xl transition-colors"
+                  className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#F0708F] bg-[#F0708F]/10 hover:bg-[#F0708F]/20 rounded-xl transition-colors"
                 >
                   <Trash2 className="w-4 h-4" /> Eliminar
                 </button>
@@ -563,18 +563,18 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                   <button
                     type="button"
                     onClick={() => handleCancelTalk(editingTalk)}
-                    className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#FFCC00] bg-[#FFCC00]/10 hover:bg-[#FFCC00]/20 rounded-xl transition-colors"
+                    className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#E8826F] bg-[#E8826F]/10 hover:bg-[#E8826F]/20 rounded-xl transition-colors"
                   >
                     <X className="w-4 h-4" /> Cancelar charla
                   </button>
                 )}
                 <div className="flex gap-3 ml-auto">
-                  <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cerrar</button>
+                  <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#B9C4B6] hover:text-white">Cerrar</button>
                   <button
                     type="button"
                     onClick={handleEditSubmit as any}
                     disabled={isSavingEdit}
-                    className="bg-[#9933FF] text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#7A29CC] disabled:opacity-50 flex items-center gap-2"
+                    className="bg-[#F2B134] text-[#1F1D1A] px-6 py-2 rounded-xl text-sm font-bold hover:bg-[#D99A1E] disabled:opacity-50 flex items-center gap-2"
                   >
                     {isSavingEdit && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                     {isSavingEdit ? "Guardando..." : "Guardar Cambios"}

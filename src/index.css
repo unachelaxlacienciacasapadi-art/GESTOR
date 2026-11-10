@@ -1,9 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&family=DM+Sans:wght@400;500;700&family=Abril+Fatface&family=Rubik+Mono+One&family=Shrikhand&display=swap');
 @import "tailwindcss";
 
+/* Identidad "Papel, coral y espuma": la de los carteles de Una chela x la ciencia
+   y el collage de Casa Pädi. Las combinaciones de texto usadas pasan contraste AA. */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-fecha: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-recorte: "Abril Fatface", ui-serif, Georgia, serif;
+  --font-recorte-mono: "Rubik Mono One", ui-sans-serif, system-ui, sans-serif;
+  --font-recorte-script: "Shrikhand", ui-serif, Georgia, serif;
+
+  --color-papel: #F3EDE1;
+  --color-papel-claro: #FBF8F2;
+  --color-crema: #F2E3D3;
+  --color-borde: #D9CFBD;
+  --color-tinta: #1F1D1A;
+  --color-tinta-suave: #4A443B;
+  --color-gris: #5E574D;
+
+  --color-chela: #2E6F40;
+  --color-chela-oscuro: #245733;
+  --color-noche: #16301F;
+  --color-noche-claro: #1C3A26;
+  --color-coral: #E8826F;
+  --color-coral-oscuro: #B5452F;
+  --color-ambar: #F2B134;
+  --color-ambar-oscuro: #D99A1E;
+
+  --color-magenta: #C42A5E;
+  --color-cobalto: #2C55C9;
+  --color-turquesa: #2A9D8F;
+  --color-morado: #7A4BC2;
+
+  --shadow-sello: 3px 3px 0 #1F1D1A;
+  --shadow-sello-lg: 6px 6px 0 #1F1D1A;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-papel);
+    color: var(--color-tinta);
+  }
 }
 
 @layer utilities {
@@ -14,11 +53,11 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #333333;
+    background: #3B5E45;
     border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #444444;
+    background: #4E7559;
   }
 }
 

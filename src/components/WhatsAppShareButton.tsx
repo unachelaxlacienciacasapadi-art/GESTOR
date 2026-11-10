@@ -1,5 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { cn } from "../lib/utils";
 
 interface TalkForShare {
   title: string;
@@ -83,44 +84,38 @@ export default function WhatsAppShareButton({
     window.open(`https://wa.me/?text=${msg}`, "_blank", "noopener,noreferrer");
   };
 
+  // Contorno de tinta con el ícono en verde WhatsApp oscuro: el verde de marca
+  // (#25D366) no alcanza contraste como texto sobre el fondo papel.
   const baseStyles =
-    "inline-flex items-center justify-center gap-2 font-bold transition-all duration-200 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366]/60";
+    "inline-flex items-center justify-center gap-2 font-bold transition-colors duration-200 cursor-pointer select-none border-2 border-tinta text-tinta hover:bg-tinta hover:text-papel focus:outline-none focus-visible:ring-2 focus-visible:ring-chela focus-visible:ring-offset-2";
 
   if (variant === "icon-only") {
     return (
       <button
         type="button"
         onClick={handleShare}
+        aria-label="Compartir por WhatsApp"
         title="Compartir por WhatsApp"
-        className={`${baseStyles} w-8 h-8 rounded-full bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white hover:shadow-[0_0_12px_rgba(37,211,102,0.4)] ${className}`}
+        className={cn(baseStyles, "w-11 h-11 rounded-full group", className)}
       >
-        <WhatsAppIcon className="w-3.5 h-3.5" />
+        <WhatsAppIcon className="w-4 h-4 text-[#128C4A] group-hover:text-papel" />
       </button>
     );
   }
 
   if (variant === "compact") {
     return (
-      <button
-        type="button"
-        onClick={handleShare}
-        className={`${baseStyles} px-3 py-1.5 text-xs rounded-full bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white hover:shadow-[0_0_12px_rgba(37,211,102,0.4)] ${className}`}
-      >
-        <WhatsAppIcon className="w-3.5 h-3.5" />
+      <button type="button" onClick={handleShare} className={cn(baseStyles, "min-h-11 px-4 text-sm rounded-full group", className)}>
+        <WhatsAppIcon className="w-4 h-4 text-[#128C4A] group-hover:text-papel" />
         Compartir
       </button>
     );
   }
 
-  // default: full-width / prominent
   return (
-    <button
-      type="button"
-      onClick={handleShare}
-      className={`${baseStyles} w-full px-5 py-2.5 text-sm rounded-xl bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white hover:shadow-[0_0_15px_rgba(37,211,102,0.35)] ${className}`}
-    >
-      <WhatsAppIcon className="w-4 h-4" />
-      Invitar a alguien
+    <button type="button" onClick={handleShare} className={cn(baseStyles, "w-full min-h-12 px-5 text-[15px] rounded-full group", className)}>
+      <WhatsAppIcon className="w-4 h-4 text-[#128C4A] group-hover:text-papel" />
+      Invitar por WhatsApp
     </button>
   );
 }

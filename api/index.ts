@@ -836,8 +836,9 @@ app.get("/api/available-dates", async (_req, res) => {
     const blockedDates = new Set<string>();
     scheduled.forEach((t: any) => {
       if (t.scheduled_date) {
-        const d = new Date(t.scheduled_date);
-        blockedDates.add(d.toISOString().split("T")[0]);
+        // scheduled_date es hora de CDMX sin zona ("YYYY-MM-DD HH:mm:ss"): se usa el
+        // texto tal cual. Pasarlo por toISOString() lo corría al día siguiente (UTC).
+        blockedDates.add(String(t.scheduled_date).slice(0, 10));
       }
     });
 

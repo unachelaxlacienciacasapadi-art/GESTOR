@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
-
-const PALETTE = ["#00FFCC", "#FF3366", "#FFCC00", "#9933FF", "#33A1FF", "#FF8A33"];
+import { swatchFor } from "./brand";
 
 const TITLE_PREFIX = /^(dra?|mtr[ao]|m\.?\s*en\s*c|lic|ing|psc?|psic|prof|biol?|arq)\.?\s+/i;
 
@@ -12,22 +11,21 @@ export const getInitials = (name: string) => {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 };
 
-export const getAccentColor = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-  return PALETTE[Math.abs(hash) % PALETTE.length];
-};
+/** Color de acento estable por texto (nombre o categoría). */
+export const getAccentColor = (seed: string) => swatchFor(seed).bg;
 
 type Props = {
   name: string;
   photoUrl?: string | null;
   className?: string;
   textClassName?: string;
+  /** Aro de tinta como en los carteles. En listas muy densas puede desactivarse. */
+  ring?: boolean;
 };
 
-export default function SpeakerAvatar({ name, photoUrl, className, textClassName }: Props) {
+export default function SpeakerAvatar({ name, photoUrl, className, textClassName, ring = true }: Props) {
   const [failed, setFailed] = useState(false);
-  const color = getAccentColor(name);
+  const ringClass = ring ? "border-[3px] border-tinta" : "border border-borde";
 
   if (photoUrl && !failed) {
     return (
@@ -37,20 +35,17 @@ export default function SpeakerAvatar({ name, photoUrl, className, textClassName
         loading="lazy"
         decoding="async"
         onError={() => setFailed(true)}
-        className={cn("rounded-full object-cover border border-[#333333] shrink-0", className)}
+        className={cn("rounded-full object-cover shrink-0 bg-crema", ringClass, className)}
       />
     );
   }
 
+  const swatch = swatchFor(name);
   return (
     <div
       aria-label={name}
-      className={cn("rounded-full flex items-center justify-center shrink-0 font-bold border", className)}
-      style={{
-        background: `linear-gradient(135deg, ${color}33, ${color}0D)`,
-        borderColor: `${color}55`,
-        color,
-      }}
+      className={cn("rounded-full flex items-center justify-center shrink-0 font-display font-semibold", ringClass, className)}
+      style={{ background: swatch.bg, color: swatch.fg }}
     >
       <span className={cn("text-sm", textClassName)}>{getInitials(name)}</span>
     </div>

@@ -1,116 +1,87 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Clock, Mic } from "lucide-react";
+import { Calendar, MapPin, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import WhatsAppShareButton from "../WhatsAppShareButton";
+import SpeakerAvatar from "../SpeakerAvatar";
+import { CutoutTag } from "../brand";
+import { googleCalendarUrl, parseTalkDate } from "../../lib/utils";
+import { CASA_PADI } from "../../lib/casaPadi";
 
 interface NextTalkCardProps {
   talk: any | null;
   onTalkClick?: (talk: any) => void;
 }
 
-const safeFormat = (dateString: string | null | undefined, formatStr: string) => {
-  if (!dateString) return "";
-  try {
-    const parsed = parseISO(dateString.replace(' ', 'T'));
-    if (isNaN(parsed.getTime())) return "";
-    return format(parsed, formatStr, { locale: es });
-  } catch { return ""; }
+const fmt = (value: string | null | undefined, pattern: string) => {
+  const d = parseTalkDate(value);
+  return d ? format(d, pattern, { locale: es }) : "";
 };
 
+/** La próxima charla, presentada como su cartel: título entre comillas, retratos y fecha en itálica. */
 export default function NextTalkCard({ talk, onTalkClick }: NextTalkCardProps) {
   if (!talk) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-[#333333] rounded-3xl">
-        <div className="w-16 h-16 rounded-full bg-[#9933FF]/10 flex items-center justify-center mb-4">
-          <Mic className="w-8 h-8 text-[#9933FF]" />
-        </div>
-        <h3 className="text-xl font-serif font-bold text-white mb-2">Próximamente nuevas charlas</h3>
-        <p className="text-[#A0A0A0] text-sm mb-6 max-w-sm">
-          Estamos organizando las próximas sesiones. ¿Tienes algo que compartir?
-        </p>
-        <Link
-          to="/registro"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#9933FF] text-white text-sm font-bold rounded-full hover:bg-[#8822EE] transition-colors shadow-[0_0_15px_rgba(153,51,255,0.3)]"
-        >
-          <Mic className="w-4 h-4" />
+      <div className="flex flex-col items-center justify-center py-16 px-6 text-center border-2 border-dashed border-coral-oscuro rounded-[28px] gap-4">
+        <Mic className="w-10 h-10 text-coral-oscuro" />
+        <h3 className="font-display font-semibold text-2xl">Estamos armando las próximas charlas</h3>
+        <p className="text-tinta-suave max-w-md">¿Tienes algo que contar? Este miércoles puede ser tuyo.</p>
+        <Link to="/registro" className="inline-flex items-center min-h-12 px-6 rounded-full bg-ambar text-tinta font-bold shadow-sello">
           Proponer una charla
         </Link>
       </div>
     );
   }
 
-  const gcalStart = safeFormat(talk.scheduled_date, "yyyyMMdd'T'HHmmss'Z'");
-  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(talk.title)}&dates=${gcalStart}/${gcalStart}&details=${encodeURIComponent(talk.abstract || "")}&location=${encodeURIComponent("Casa Padi")}`;
+  const speakers = [
+    { name: talk.speaker_name, photo: talk.speaker_photo_url },
+    ...(talk.speaker_2_name ? [{ name: talk.speaker_2_name, photo: talk.speaker_2_photo_url }] : []),
+  ];
 
   return (
-    <div
-      className="bg-gradient-to-r from-[#141414] to-[#0A0A0A] p-1 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(0,255,204,0.15)] group hover:shadow-[0_0_40px_rgba(0,255,204,0.25)] transition-all duration-500 cursor-pointer"
-      onClick={() => onTalkClick?.(talk)}
-    >
-      <div className="bg-[#050505] rounded-[22px] flex flex-col md:flex-row overflow-hidden relative">
-        {/* Image */}
-        <div className="w-full md:w-2/5 relative overflow-hidden h-48 md:h-auto border-b md:border-b-0 md:border-r border-[#333333]">
-          {talk.speaker_photo_url ? (
-            <img
-              src={talk.speaker_photo_url}
-              alt={`${talk.speaker_name} - Próxima Charla`}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-            />
-          ) : (
-            <div className="w-full h-full min-h-[12rem] bg-[#1A1A1A] flex items-center justify-center">
-              <Calendar className="w-16 h-16 text-[#333333]" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent md:bg-gradient-to-l md:from-[#050505] md:via-transparent opacity-90 pointer-events-none" />
-          <div className="absolute top-4 left-4 bg-[#00FFCC] text-black px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 uppercase tracking-wide shadow-[0_0_15px_rgba(0,255,204,0.3)]">
-            <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-            PRÓXIMA CHARLA
-          </div>
+    <article className="bg-papel-claro rounded-[28px] border-2 border-tinta shadow-sello-lg flex flex-col-reverse md:flex-row overflow-hidden">
+      <div className="flex-[1.6] p-7 md:p-11 flex flex-col gap-5 min-w-0">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-[11px] font-bold tracking-[0.14em] uppercase bg-chela text-papel px-2.5 py-1 rounded-full">La que sigue</span>
+          {talk.category && <CutoutTag size="sm">{talk.category}</CutoutTag>}
         </div>
-
-        {/* Info */}
-        <div className="p-6 md:p-8 flex-1 flex flex-col justify-center text-left">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="bg-[#333333] text-[#A0A0A0] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-              {talk.category || "General"}
-            </span>
-            <span className="text-[#00FFCC] text-sm font-bold flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              {safeFormat(talk.scheduled_date, "HH:mm")} hrs
-            </span>
-          </div>
-
-          <h3 className="text-2xl md:text-3xl font-serif font-bold text-white leading-tight mb-2">
-            {talk.title}
+        <button type="button" onClick={() => onTalkClick?.(talk)} className="text-left group">
+          <h3 className="font-display font-medium text-[28px] md:text-[40px] leading-[1.12] text-chela tracking-tight group-hover:text-chela-oscuro">
+            “{talk.title}”
           </h3>
-          <p className="text-lg text-[#E0E0E0] font-medium mb-4">{talk.speaker_name}</p>
-          <p className="text-sm text-[#A0A0A0] line-clamp-2 md:line-clamp-3 mb-6 leading-relaxed">
-            {talk.abstract}
-          </p>
-
-          <div className="mt-auto flex flex-col gap-3 border-t border-[#333333] pt-5">
-            <div className="flex items-center gap-2 text-[#E0E0E0] text-sm font-medium bg-[#141414] px-4 py-2 rounded-xl">
-              <Calendar className="w-4 h-4 text-[#FF3366]" />
-              {safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
-              <a
-                href={gcalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#F0F0F0] transition-colors whitespace-nowrap"
-              >
-                <Calendar className="w-4 h-4" />
-                Añadir al Calendario
-              </a>
-              <WhatsAppShareButton talk={talk} variant="default" />
-            </div>
-          </div>
+        </button>
+        <p className="font-fecha italic font-semibold text-[26px] md:text-[32px] leading-tight first-letter:uppercase">
+          {fmt(talk.scheduled_date, "EEEE d 'de' MMMM")} · {fmt(talk.scheduled_date, "h:mm aaa")}
+        </p>
+        <p className="flex items-center gap-2 text-[15px] text-tinta-suave">
+          <MapPin className="w-4 h-4 text-coral-oscuro shrink-0" /> Casa Pädi · {CASA_PADI.address}
+        </p>
+        <div className="flex flex-wrap gap-3 pt-1">
+          <a
+            href={googleCalendarUrl(talk)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 min-h-12 px-6 rounded-full bg-chela text-papel font-bold text-[15px] hover:bg-chela-oscuro transition-colors"
+          >
+            <Calendar className="w-4 h-4" /> Añadir al calendario
+          </a>
+          <WhatsAppShareButton talk={talk} variant="default" className="w-auto" />
         </div>
       </div>
-    </div>
+
+      <div className="flex-1 bg-crema px-6 py-8 md:py-10 flex md:flex-col items-center justify-center gap-6 md:gap-7">
+        {speakers.map((s, i) => (
+          <div key={s.name} className="flex flex-col items-center gap-2.5 text-center">
+            <SpeakerAvatar
+              name={s.name}
+              photoUrl={s.photo}
+              className={i === 0 ? "w-28 h-28 md:w-36 md:h-36 border-[5px]" : "w-24 h-24 md:w-28 md:h-28 border-[4px]"}
+              textClassName={i === 0 ? "text-4xl" : "text-3xl"}
+            />
+            <p className="font-bold text-xs md:text-sm uppercase tracking-wide max-w-[200px] leading-snug">{s.name}</p>
+          </div>
+        ))}
+      </div>
+    </article>
   );
 }

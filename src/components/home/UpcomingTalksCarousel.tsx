@@ -1,120 +1,60 @@
-import useEmblaCarousel from "embla-carousel-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, ChevronLeft, ChevronRight, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useCallback } from "react";
-import { cn } from "../../lib/utils";
-import WhatsAppShareButton from "../WhatsAppShareButton";
-import SpeakerAvatar, { getAccentColor } from "../SpeakerAvatar";
+import { categorySwatch } from "../brand";
+import { parseTalkDate } from "../../lib/utils";
 
 interface Props {
   talks: any[];
   onTalkClick?: (talk: any) => void;
 }
 
-const safeFormat = (dateString: string | null | undefined, formatStr: string) => {
-  if (!dateString) return "";
-  try {
-    const parsed = parseISO(dateString.replace(' ', 'T'));
-    if (isNaN(parsed.getTime())) return "";
-    return format(parsed, formatStr, { locale: es });
-  } catch { return ""; }
+const fmt = (value: string | null | undefined, pattern: string) => {
+  const d = parseTalkDate(value);
+  return d ? format(d, pattern, { locale: es }) : "";
 };
 
-export default function UpcomingTalksCarousel({ talks, onTalkClick }: Props) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
-  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+const speakerLine = (talk: any) => [talk.speaker_name, talk.speaker_2_name].filter(Boolean).join(" y ");
 
-  if (!talks || talks.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-[#333333] rounded-3xl mt-6">
-        <div className="w-16 h-16 rounded-full bg-[#FFCC00]/10 flex items-center justify-center mb-4">
-          <Mic className="w-8 h-8 text-[#FFCC00]" />
-        </div>
-        <h3 className="text-lg font-bold text-white mb-2">No hay más charlas agendadas</h3>
-        <p className="text-[#A0A0A0] text-sm mb-6 max-w-sm">
-          ¿Tienes un tema apasionante que quieras compartir con la comunidad de Pachuca?
-        </p>
-        <Link
-          to="/registro"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFCC00] text-black text-sm font-bold rounded-full hover:bg-[#E6B800] transition-colors"
-        >
-          <Mic className="w-4 h-4" />
-          Proponer una charla
-        </Link>
-      </div>
-    );
-  }
+/** "Lo que viene": cada charla como boleto, con talón de fecha en el color de su categoría. */
+export default function UpcomingTalksCarousel({ talks, onTalkClick }: Props) {
+  if (!talks || talks.length === 0) return null;
 
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-white">Más charlas agendadas</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={scrollPrev}
-            className="p-2 rounded-full bg-[#1A1A1A] border border-[#333333] text-[#A0A0A0] hover:text-white hover:bg-[#333333] transition-all"
-            aria-label="Anterior"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={scrollNext}
-            className="p-2 rounded-full bg-[#1A1A1A] border border-[#333333] text-[#A0A0A0] hover:text-white hover:bg-[#333333] transition-all"
-            aria-label="Siguiente"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+    <section aria-labelledby="lo-que-viene" className="mt-16">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 mb-5">
+        <h2 id="lo-que-viene" className="font-display font-semibold text-3xl md:text-[34px] tracking-tight">Lo que viene</h2>
+        <Link to="/cartelera" className="font-bold text-chela hover:text-chela-oscuro underline-offset-4 hover:underline">
+          Ver toda la cartelera →
+        </Link>
       </div>
-
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-4">
-          {talks.map((talk) => (
-            <div
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {talks.map((talk) => {
+          const swatch = categorySwatch(talk.category);
+          return (
+            <button
               key={talk.id}
-              className="flex-shrink-0 w-[280px] sm:w-[320px] bg-[#141414] border border-[#333333] rounded-2xl overflow-hidden hover:border-[#9933FF]/50 hover:shadow-[0_0_20px_rgba(153,51,255,0.15)] transition-all duration-300 group cursor-pointer"
+              type="button"
               onClick={() => onTalkClick?.(talk)}
+              className="text-left bg-papel-claro border border-borde rounded-[18px] overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-sello transition-all"
             >
-              <div className="h-36 bg-[#1A1A1A] relative overflow-hidden">
-                {talk.speaker_photo_url ? (
-                  <img
-                    src={talk.speaker_photo_url}
-                    alt={talk.speaker_name}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{ background: `radial-gradient(circle at 30% 20%, ${getAccentColor(talk.speaker_name || "")}33, #141414 70%)` }}
-                  >
-                    <SpeakerAvatar name={talk.speaker_name || ""} className="w-20 h-20" textClassName="text-2xl" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
-                <span className="absolute bottom-3 left-3 text-xs font-bold text-[#9933FF] bg-[#9933FF]/10 px-2 py-1 rounded-full border border-[#9933FF]/30">
-                  {talk.category || "General"}
+              <div
+                className="px-4 py-3.5 flex items-baseline justify-between gap-2 border-b-[3px] border-dashed border-papel-claro"
+                style={{ background: swatch.bg, color: swatch.fg }}
+              >
+                <span className="font-display font-semibold text-3xl leading-none">
+                  {fmt(talk.scheduled_date, "d")} <span className="text-[15px] font-medium">{fmt(talk.scheduled_date, "MMM")}</span>
                 </span>
+                <span className="text-xs font-bold uppercase tracking-wider truncate">{talk.category || "General"}</span>
               </div>
-              <div className="p-4">
-                <h4 className="text-sm font-bold text-white leading-snug mb-1 line-clamp-2">{talk.title}</h4>
-                <p className="text-xs text-[#A0A0A0] mb-3">{talk.speaker_name}</p>
-                <div className="flex items-center gap-1.5 text-xs text-[#00FFCC] mb-3">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span className="first-letter:uppercase">{safeFormat(talk.scheduled_date, "EEEE d 'de' MMMM")}</span>
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <WhatsAppShareButton talk={talk} variant="compact" className="w-full" />
-                </div>
+              <div className="p-4 flex flex-col gap-2 flex-1">
+                <h3 className="font-display font-semibold text-[17px] leading-snug line-clamp-3">{talk.title}</h3>
+                <p className="text-sm text-tinta-suave mt-auto line-clamp-2">{speakerLine(talk)}</p>
               </div>
-            </div>
-          ))}
-        </div>
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 }

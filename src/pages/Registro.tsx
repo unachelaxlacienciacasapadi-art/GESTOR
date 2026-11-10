@@ -1,155 +1,144 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Upload, Send, CheckCircle2, AlertCircle, FileDown, Printer, Share2, Download, Phone } from "lucide-react";
-import { cn } from "../lib/utils";
-import jsPDF from "jspdf";
+import { Upload, Send, CheckCircle2, AlertCircle, Share2, Download, Phone, Check } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { toPng } from "html-to-image";
+import { cn, parseTalkDate } from "../lib/utils";
+import { CoralBranch } from "../components/brand";
+import { CASA_PADI } from "../lib/casaPadi";
+
+const fmt = (value: string, pattern: string) => {
+  const d = parseTalkDate(value);
+  return d ? format(d, pattern, { locale: es }) : value;
+};
+
+const inputClass =
+  "w-full px-4 py-3 bg-papel border-2 border-tinta rounded-2xl text-tinta placeholder:text-gris focus:outline-none focus:ring-2 focus:ring-chela transition-shadow";
+
+function Field({ id, label, hint, children }: { id?: string; label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-xs font-bold uppercase tracking-wide">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="text-xs text-gris">{hint}</p>}
+    </div>
+  );
+}
+
+function SectionTitle({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-3 font-display font-semibold text-xl md:text-2xl">
+      <span className="w-9 h-9 rounded-full bg-tinta text-papel flex items-center justify-center text-base shrink-0">{n}</span>
+      {children}
+    </h2>
+  );
+}
 
 export default function Registro() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [formError, setFormError] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [folioId, setFolioId] = useState<number | null>(null);
-  const [availableDates, setAvailableDates] = useState<{ date: string, formatted: string }[]>([]);
-  const [preferredDate1, setPreferredDate1] = useState("");
-  const [preferredDate2, setPreferredDate2] = useState("");
+  const [availableDates, setAvailableDates] = useState<{ date: string; formatted: string }[]>([]);
+  const [pickedDates, setPickedDates] = useState<string[]>([]);
   const [isLoadingDates, setIsLoadingDates] = useState(true);
 
   useEffect(() => {
-    const fetchDates = async () => {
-      try {
-        console.log("Fetching available dates...");
-        const res = await fetch("/api/available-dates");
-        const data = await res.json();
-        setAvailableDates(data.availableDates || []);
-      } catch (err) {
-        console.error("Error fetching dates:", err);
-      } finally {
-        setIsLoadingDates(false);
-      }
-    };
-    fetchDates();
+    fetch("/api/available-dates")
+      .then((res) => res.json())
+      .then((data) => setAvailableDates(data.availableDates || []))
+      .catch((err) => console.error("Error fetching dates:", err))
+      .finally(() => setIsLoadingDates(false));
   }, []);
 
-  const formatearFecha = (isoDate: string) => {
-    try {
-      const fecha = new Date(isoDate);
-      return new Intl.DateTimeFormat('es-MX', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: 'America/Mexico_City'
-      }).format(fecha);
-    } catch (e) {
-      return isoDate;
-    }
+  // Se eligen dos miércoles y se ordenan solos: la primera opción siempre es la más próxima.
+  const togglePick = (date: string) => {
+    setPickedDates((prev) => {
+      if (prev.includes(date)) return prev.filter((d) => d !== date);
+      const next = prev.length >= 2 ? [prev[1], date] : [...prev, date];
+      return next.sort();
+    });
   };
 
-  const compressImage = (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
+  const compressImage = (file: File): Promise<Blob> =>
+    new Promise((resolve, reject) => {
       const img = new Image();
       img.src = URL.createObjectURL(file);
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject("Could not get canvas context");
-        
-        let width = img.width;
-        let height = img.height;
+        let { width, height } = img;
         const maxSize = 1000;
-        
-        if (width > height) {
-          if (width > maxSize) {
-            height *= maxSize / width;
-            width = maxSize;
-          }
-        } else {
-          if (height > maxSize) {
-            width *= maxSize / height;
-            height = maxSize;
-          }
+        if (width > height && width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
         }
-        
         canvas.width = width;
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-          else reject("Compression failed");
-        }, "image/jpeg", 0.7);
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject("Compression failed")), "image/jpeg", 0.7);
       };
       img.onerror = reject;
     });
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
+    setFormError(null);
+
+    const formData = new FormData(form);
+    if (formData.get("_trap")) {
+      setSubmitStatus("success");
+      return;
+    }
+
+    if (pickedDates.length < 2) {
+      setFormError("Elige dos miércoles en los que podrías dar tu charla.");
+      document.getElementById("fechas")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    formData.set("preferred_date_1", pickedDates[0]);
+    formData.set("preferred_date_2", pickedDates[1]);
+
     setIsSubmitting(true);
     setSubmitStatus("idle");
 
-    const formData = new FormData(form);
-    const trap = formData.get("_trap");
-    if (trap) { setSubmitStatus("success"); return; }
-
-    // Validaciones de fechas
-    const p1 = formData.get("preferred_date_1") as string;
-    const p2 = formData.get("preferred_date_2") as string;
-
-    if (!p1 || !p2) {
-      alert("Por favor selecciona ambas opciones de fecha.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (p1 === p2) {
-      alert("La segunda opción de fecha debe ser diferente a la primera.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (p1.split("T")[0] > p2.split("T")[0]) {
-      alert("La primera opción de fecha debe ser anterior a la segunda (por orden cronológico).");
-      setIsSubmitting(false);
-      return;
-    }
-
     const photoFile = formData.get("photo") as File;
-
     if (photoFile && photoFile.size > 0) {
       try {
-        const compressedBlob = await compressImage(photoFile);
-        formData.set("photo", compressedBlob, "photo.jpg");
+        formData.set("photo", await compressImage(photoFile), "photo.jpg");
       } catch (err) {
         console.warn("Compression failed, sending original", err);
       }
     }
 
     try {
-      const res = await fetch("/api/talks", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch("/api/talks", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
-        console.error("Validation error:", JSON.stringify(data, null, 2));
-        alert("Error de validación:\n" + JSON.stringify(data.details?.fieldErrors || data, null, 2));
+        const fieldErrors = data.details?.fieldErrors as Record<string, string[]> | undefined;
+        const first = fieldErrors && Object.entries(fieldErrors)[0];
+        setFormError(first ? `Revisa el campo "${first[0]}": ${first[1][0]}` : data.error || "Revisa los datos del formulario.");
         setSubmitStatus("error");
         return;
       }
       setFolioId(data.id);
-
       setSubmitStatus("success");
       form.reset();
       setPhotoPreview(null);
-      setPreferredDate1("");
-      setPreferredDate2("");
+      setPickedDates([]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error(error);
       setSubmitStatus("error");
+      setFormError("No pudimos enviar tu propuesta. Revisa tu conexión e inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -157,29 +146,21 @@ export default function Registro() {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPhotoPreview(null);
-    }
+    if (!file) return setPhotoPreview(null);
+    const reader = new FileReader();
+    reader.onloadend = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const guideRef = useRef<HTMLDivElement>(null);
+  const folio = String(folioId ?? 0).padStart(4, "0");
 
   const downloadImage = async () => {
     if (!guideRef.current) return;
     try {
-      const dataUrl = await toPng(guideRef.current, {
-        cacheBust: true,
-        backgroundColor: '#0A0A0A',
-        pixelRatio: 2,
-      });
+      const dataUrl = await toPng(guideRef.current, { cacheBust: true, backgroundColor: "#FBF8F2", pixelRatio: 2 });
       const link = document.createElement("a");
-      link.download = `Registro_CasaPadi_Folio_${folioId || '000'}.png`;
+      link.download = `Registro_CasaPadi_Folio_${folio}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -188,425 +169,221 @@ export default function Registro() {
   };
 
   const shareWhatsApp = () => {
-    const phone = "7717741409";
-    const text = `¡Hola Casa Pädi! 🎉 Acabo de registrar mi propuesta de charla con el Folio: #${String(folioId).padStart(4, '0')}. ¡Quedo atento a su contacto! 👋`;
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const phone = `52${CASA_PADI.phone.replace(/\D/g, "")}`;
+    const text = `¡Hola Casa Pädi! Acabo de registrar mi propuesta de charla con el folio #${folio}. Quedo atenta/o a su contacto.`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <div className="text-center mb-10 space-y-3">
-        <h1 className="text-3xl md:text-5xl font-serif font-bold text-white">Proponer una Charla</h1>
-        <p className="text-sm md:text-base text-[#A0A0A0]">
-          Comparte tu investigación o tema científico favorito en un ambiente relajado.
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+      <header className="relative mb-10">
+        <CoralBranch className="absolute -right-4 -top-8 w-40 h-40 rotate-[200deg] opacity-80 hidden sm:block" />
+        <h1 className="relative font-display font-medium text-[48px] md:text-[68px] leading-[0.95] tracking-[-0.03em] text-chela">Proponer una charla</h1>
+        <p className="relative mt-4 text-lg text-tinta-suave max-w-xl">
+          Tu investigación, tu tesis o el tema que te apasiona, contado en la terraza de Casa Pädi un miércoles a las 7:00 pm.
         </p>
-      </div>
+      </header>
 
-      <div className="bg-[#141414] rounded-2xl shadow-lg border border-[#333333] p-6 md:p-10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFCC00] rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none" />
-        
-        {submitStatus === "success" && (
-          <div className="mb-8 flex flex-col items-center space-y-8 relative z-10">
-            <div className="flex flex-col items-center text-center space-y-4 no-print">
-              <div className="w-16 h-16 bg-[#00FFCC]/20 rounded-full flex items-center justify-center border border-[#00FFCC]/30 animate-pulse">
-                <CheckCircle2 className="w-8 h-8 text-[#00FFCC]" />
+      {submitStatus === "success" ? (
+        <div className="space-y-8">
+          <div className="bg-papel-claro rounded-[28px] border-2 border-tinta shadow-sello-lg p-7 md:p-10 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-chela text-papel flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h2 className="font-display font-semibold text-3xl">¡Gracias por proponer tu charla!</h2>
+            <p className="text-tinta-suave max-w-md mx-auto">Recibimos tu propuesta. La revisaremos y te contactaremos en los próximos días.</p>
+
+            <ol className="text-left max-w-md mx-auto space-y-4 pt-4">
+              <li className="flex gap-3">
+                <span className="w-8 h-8 rounded-full bg-chela text-papel flex items-center justify-center shrink-0"><Check className="w-4 h-4" /></span>
+                <div><p className="font-bold">Envío recibido</p><p className="text-sm text-tinta-suave">Tu folio #{folio} ya está registrado.</p></div>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-8 h-8 rounded-full border-2 border-tinta flex items-center justify-center shrink-0 font-bold text-sm">2</span>
+                <div><p className="font-bold">Revisión</p><p className="text-sm text-tinta-suave">Revisamos los detalles en 1 a 3 días hábiles.</p></div>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-8 h-8 rounded-full border-2 border-tinta flex items-center justify-center shrink-0"><Phone className="w-3.5 h-3.5" /></span>
+                <div><p className="font-bold">Confirmación</p><p className="text-sm text-tinta-suave">Te escribimos por WhatsApp o correo para definir la fecha.</p></div>
+              </li>
+            </ol>
+
+            <div className="flex flex-wrap justify-center gap-3 pt-4">
+              <button type="button" onClick={shareWhatsApp} className="inline-flex items-center gap-2 min-h-12 px-6 rounded-full bg-chela text-papel font-bold hover:bg-chela-oscuro transition-colors">
+                <Share2 className="w-4 h-4" /> Confirmar por WhatsApp
+              </button>
+              <button type="button" onClick={downloadImage} className="inline-flex items-center gap-2 min-h-12 px-6 rounded-full border-2 border-tinta font-bold hover:bg-tinta hover:text-papel transition-colors">
+                <Download className="w-4 h-4" /> Guardar folio (imagen)
+              </button>
+            </div>
+          </div>
+
+          {/* Lo que se guarda como imagen */}
+          <div className="rounded-[28px] overflow-hidden border-2 border-tinta print-area">
+            <div ref={guideRef} className="p-8 md:p-10 bg-papel-claro relative">
+              <div className="flex justify-between items-start gap-4 mb-8 pb-6 border-b-2 border-tinta">
+                <div className="flex items-center gap-4">
+                  <img src="/assets/logo.webp" alt="" className="w-16 h-16" />
+                  <div>
+                    <p className="font-display font-semibold text-2xl text-chela">Una chela x la ciencia</p>
+                    <p className="text-sm text-gris">Casa Pädi · Pachuca</p>
+                  </div>
+                </div>
+                <div className="bg-ambar border-2 border-tinta rounded-2xl px-4 py-2 text-center shrink-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Folio</p>
+                  <p className="font-display font-semibold text-2xl">#{folio}</p>
+                </div>
               </div>
-              <h3 className="text-3xl font-serif font-bold text-white">¡Gracias por participar!</h3>
-              <p className="text-[#A0A0A0] max-w-sm">
-                Hemos recibido tu propuesta. Nuestro equipo la revisará y te contactará en los próximos días.
+              <div className="grid gap-5 md:grid-cols-2">
+                <div>
+                  <p className="font-bold text-coral-oscuro mb-2">Siguientes pasos</p>
+                  <ul className="text-sm space-y-2 text-tinta-suave list-disc pl-5">
+                    <li>Espera nuestro mensaje en 1 a 3 días.</li>
+                    <li>Prepara una presentación (PDF o PPT) de 20 a 30 minutos.</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-bold text-chela mb-2">Recomendaciones</p>
+                  <ul className="text-sm space-y-2 text-tinta-suave list-disc pl-5">
+                    <li>Mantén el lenguaje accesible y divertido.</li>
+                    <li>Usa analogías y ejemplos de la vida diaria.</li>
+                  </ul>
+                </div>
+              </div>
+              <p className="text-center font-fecha italic font-semibold text-2xl pt-8 mt-8 border-t-2 border-borde">
+                ¡Nos vemos pronto para compartir ciencia y una buena chela!
               </p>
             </div>
-
-            {/* Next Steps Timeline */}
-            <div className="w-full max-w-md bg-[#0A0A0A] border border-[#222222] rounded-2xl p-6 space-y-6 no-print">
-              <h4 className="text-xs font-bold text-[#A0A0A0] uppercase tracking-widest text-center mb-2">¿Qué sigue ahora?</h4>
-              
-              <div className="space-y-6 relative">
-                <div className="absolute left-3 top-2 bottom-2 w-px bg-gradient-to-b from-[#00FFCC] via-[#333333] to-[#333333]" />
-                
-                <div className="flex gap-4 relative">
-                  <div className="w-6 h-6 rounded-full bg-[#00FFCC] flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(0,255,204,0.5)]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-black" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Envío recibido</p>
-                    <p className="text-xs text-[#A0A0A0]">Tu folio #${String(folioId).padStart(4, '0')} ya está en nuestra base de datos.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 relative">
-                  <div className="w-6 h-6 rounded-full bg-[#333333] border border-[#444444] flex items-center justify-center shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-[#FFCC00] animate-ping" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Revisión en proceso</p>
-                    <p className="text-xs text-[#A0A0A0]">Revisaremos los detalles (1-3 días hábiles).</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 relative">
-                  <div className="w-6 h-6 rounded-full bg-[#333333] border border-[#444444] flex items-center justify-center shrink-0">
-                    <Phone className="w-3 h-3 text-[#A0A0A0]" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Confirmación por WhatsApp/Correo</p>
-                    <p className="text-xs text-[#A0A0A0]">Te avisaremos para definir la fecha de tu charla.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 w-full max-w-md no-print">
-              <button
-                onClick={shareWhatsApp}
-                className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 bg-[#25D366] text-black rounded-full hover:bg-[#20bd5b] transition-all font-bold shadow-[0_4px_15px_rgba(37,211,102,0.3)]"
-              >
-                <Share2 className="w-4 h-4" />
-                Confirmar vía WhatsApp
-              </button>
-              <button
-                onClick={downloadImage}
-                className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 bg-white/5 text-white border border-white/10 rounded-full hover:bg-white/10 transition-all font-medium"
-              >
-                <Download className="w-4 h-4 text-[#00FFCC]" />
-                Guardar Folio (Imagen)
-              </button>
-            </div>
-
-            {/* Guide Preview (What goes in the image) */}
-            <div className="w-full max-w-2xl mt-8 overflow-hidden rounded-2xl border border-[#333333] shadow-2xl bg-[#0A0A0A] print-area">
-              <div ref={guideRef} className="p-10 bg-[#0A0A0A] relative" style={{ backgroundColor: '#0A0A0A' }}>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#00FFCC] rounded-full mix-blend-screen filter blur-[120px] opacity-10" />
-                
-                <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-10 border-b border-[#222222] pb-6">
-                    <div>
-                      <h2 className="text-3xl font-serif font-bold text-white mb-2">Casa Pädi</h2>
-                      <p className="text-[#00FFCC] font-medium tracking-[0.2em] uppercase text-xs">Una chela por la ciencia</p>
-                    </div>
-                    <div className="bg-[#141414] border border-[#222222] p-4 py-3 rounded-xl text-center min-w-[120px]">
-                      <p className="text-[10px] text-[#A0A0A0] uppercase tracking-widest mb-1">Folio</p>
-                      <p className="text-2xl font-mono font-bold text-[#FFCC00]">
-                        #{String(folioId || '0').padStart(4, '0')}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-8">
-                    <div>
-                      <h4 className="text-xs uppercase tracking-widest text-[#A0A0A0] mb-4">Guía para el Ponente</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-[#141414]/50 p-5 rounded-2xl border border-[#222222]">
-                          <p className="text-[#FF3366] font-bold text-sm mb-3">Siguientes Pasos</p>
-                          <ul className="text-xs space-y-3 text-[#A0A0A0]">
-                            <li className="flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] mt-1 shrink-0" />
-                              Espera nuestra llamada o mensaje en un lapso de 1 a 3 días.
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] mt-1 shrink-0" />
-                              Ten lista una presentación (PDF o PPT) de unos 20-30 min.
-                            </li>
-                          </ul>
-                        </div>
-                        <div className="bg-[#141414]/50 p-5 rounded-2xl border border-[#222222]">
-                          <p className="text-[#00FFCC] font-bold text-sm mb-3">Recomendaciones</p>
-                          <ul className="text-xs space-y-3 text-[#A0A0A0]">
-                            <li className="flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#00FFCC] mt-1 shrink-0" />
-                              Mantén el lenguaje accesible y divertido.
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#00FFCC] mt-1 shrink-0" />
-                              Usa analogías y ejemplos de la vida diaria.
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-center font-serif text-xl text-white pt-6 border-t border-[#222222] italic">
-                      "¡Nos vemos pronto para compartir ciencia y una buena chela!"
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSubmitStatus("idle")}
-              className="mt-8 text-sm text-[#A0A0A0] hover:text-white underline underline-offset-4 transition-colors no-print"
-            >
-              Enviar otra propuesta
-            </button>
-          </div>
-        )}
-
-        {submitStatus === "error" && (
-          <div className="mb-8 p-4 bg-[#FF3366]/10 border border-[#FF3366]/30 rounded-xl flex items-start gap-3 text-[#FF3366] relative z-10">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-sm">Ocurrió un error al enviar la propuesta. Por favor, intenta de nuevo.</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className={cn("space-y-8 relative z-10", submitStatus === "success" && "hidden")}>
-          <div className="space-y-5">
-            <h2 className="text-xl font-serif font-bold text-white border-b border-[#333333] pb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FF3366]" />
-              Datos de la Charla
-            </h2>
-            
-            <div className="space-y-1.5">
-              <label htmlFor="title" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                Título de la Charla
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                required
-                className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FF3366] focus:border-[#FF3366] focus:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all outline-none text-white text-sm"
-                placeholder="Ej. La física detrás de una buena taza de café"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="abstract" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                Resumen (Abstract)
-              </label>
-              <textarea
-                id="abstract"
-                name="abstract"
-                required
-                rows={3}
-                className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FF3366] focus:border-[#FF3366] focus:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all outline-none text-white text-sm resize-none"
-                placeholder="Describe brevemente de qué tratará tu charla..."
-              />
-            </div>
-            
-            <div className="space-y-1.5">
-              <label htmlFor="technical_needs" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                Necesidades Técnicas Especiales
-              </label>
-              <textarea
-                id="technical_needs"
-                name="technical_needs"
-                rows={2}
-                className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FF3366] focus:border-[#FF3366] focus:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all outline-none text-white text-sm resize-none"
-                placeholder="Contamos con proyector, audio y PC. ¿Necesitas algo más?"
-              />
-            </div>
           </div>
 
-          <div className="space-y-5 pt-4">
-            <h2 className="text-xl font-serif font-bold text-white border-b border-[#333333] pb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FFCC00]" />
-              Disponibilidad
-            </h2>
-            <p className="text-xs text-[#A0A0A0]">
-              Selecciona dos miércoles en los que podrías dar tu charla (sujeto a disponibilidad).
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label htmlFor="preferred_date_1" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Primera opción de fecha *
-                </label>
-                <select
-                  id="preferred_date_1"
-                  name="preferred_date_1"
-                  required
-                  value={preferredDate1}
-                  onChange={(e) => {
-                    setPreferredDate1(e.target.value);
-                    if (e.target.value === preferredDate2) setPreferredDate2("");
-                  }}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FFCC00] focus:border-[#FFCC00] focus:shadow-[0_0_15px_rgba(255,204,0,0.2)] transition-all outline-none text-white text-sm appearance-none"
-                >
-                  <option value="">{isLoadingDates ? "Cargando fechas..." : "Selecciona una fecha"}</option>
-                  {availableDates.map(d => (
-                    <option key={d.date} value={d.date}>
-                      {formatearFecha(d.date)}
-                    </option>
-                  ))}
-                </select>
-                {!isLoadingDates && availableDates.length === 0 && (
-                  <p className="text-[10px] text-[#FF3366]">No hay fechas disponibles próximas. Contacta al administrador.</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="preferred_date_2" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Segunda opción de fecha (alternativa) *
-                </label>
-                <select
-                  id="preferred_date_2"
-                  name="preferred_date_2"
-                  required
-                  value={preferredDate2}
-                  disabled={!preferredDate1}
-                  onChange={(e) => setPreferredDate2(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#FFCC00] focus:border-[#FFCC00] focus:shadow-[0_0_15px_rgba(255,204,0,0.2)] transition-all outline-none text-white text-sm appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">{preferredDate1 ? "Selecciona alternativa" : "Primero elige la 1ª opción"}</option>
-                  {availableDates
-                    .filter(d => d.date !== preferredDate1)
-                    .map(d => (
-                      <option key={d.date} value={d.date}>
-                        {formatearFecha(d.date)}
-                      </option>
-                    ))}
-                </select>
-              </div>
+          <button type="button" onClick={() => setSubmitStatus("idle")} className="block mx-auto text-sm font-bold underline underline-offset-4 hover:text-chela">
+            Enviar otra propuesta
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="bg-papel-claro rounded-[28px] border-2 border-tinta shadow-sello-lg p-6 md:p-10 space-y-10" noValidate={false}>
+          {formError && (
+            <div role="alert" className="p-4 rounded-2xl border-2 border-coral-oscuro bg-papel flex items-start gap-3 text-coral-oscuro font-bold">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <p>{formError}</p>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-5 pt-4">
-            <h2 className="text-xl font-serif font-bold text-white border-b border-[#333333] pb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#00FFCC]" />
-              Datos del Ponente
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label htmlFor="speaker_name" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  id="speaker_name"
-                  name="speaker_name"
-                  required
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] focus:shadow-[0_0_15px_rgba(0,255,204,0.2)] transition-all outline-none text-white text-sm"
-                  placeholder="Tu nombre"
-                />
+          <section className="space-y-5">
+            <SectionTitle n={1}>Tu charla</SectionTitle>
+            <Field id="title" label="Título">
+              <input type="text" id="title" name="title" required className={inputClass} placeholder="Ej. La física detrás de una buena taza de café" />
+            </Field>
+            <Field id="abstract" label="¿De qué trata?">
+              <textarea id="abstract" name="abstract" required rows={4} className={cn(inputClass, "resize-none")} placeholder="Cuéntanos en pocas líneas qué vas a compartir y por qué es interesante." />
+            </Field>
+            <Field id="technical_needs" label="¿Necesitas algo especial?" hint="Contamos con proyector, audio y computadora.">
+              <textarea id="technical_needs" name="technical_needs" rows={2} className={cn(inputClass, "resize-none")} placeholder="Opcional" />
+            </Field>
+          </section>
+
+          <section className="space-y-4" id="fechas">
+            <SectionTitle n={2}>Elige dos miércoles</SectionTitle>
+            <p className="text-tinta-suave">Toca dos fechas que te acomoden; la más próxima será tu primera opción.</p>
+            {isLoadingDates ? (
+              <div className="h-24 rounded-2xl bg-crema animate-pulse" aria-label="Cargando fechas" />
+            ) : availableDates.length === 0 ? (
+              <p className="p-4 rounded-2xl border-2 border-dashed border-coral-oscuro text-coral-oscuro font-bold">
+                No hay fechas libres por ahora. Escríbenos y buscamos un espacio.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" role="group" aria-label="Miércoles disponibles">
+                {availableDates.slice(0, 12).map((d) => {
+                  const order = pickedDates.indexOf(d.date);
+                  const picked = order !== -1;
+                  return (
+                    <button
+                      key={d.date}
+                      type="button"
+                      aria-pressed={picked}
+                      onClick={() => togglePick(d.date)}
+                      className={cn(
+                        "relative text-left rounded-2xl border-2 px-4 py-3 transition-all",
+                        picked ? "bg-chela border-chela text-papel shadow-sello" : "bg-papel border-borde hover:border-tinta"
+                      )}
+                    >
+                      {picked && (
+                        <span className="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-ambar text-tinta border-2 border-tinta text-xs font-bold flex items-center justify-center">
+                          {order + 1}ª
+                        </span>
+                      )}
+                      <span className={cn("block text-[11px] font-bold uppercase tracking-[0.12em]", picked ? "text-papel" : "text-gris")}>{fmt(d.date, "MMMM")}</span>
+                      <span className="block font-display font-semibold text-3xl leading-none mt-0.5">{fmt(d.date, "d")}</span>
+                      <span className="block font-fecha italic text-base mt-0.5">{fmt(d.date, "h:mm aaa")}</span>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <div className="space-y-1.5">
-                <label htmlFor="social_media" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Usuario en Redes Sociales
-                </label>
-                <input
-                  type="text"
-                  id="social_media"
-                  name="social_media"
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] focus:shadow-[0_0_15px_rgba(0,255,204,0.2)] transition-all outline-none text-white text-sm"
-                  placeholder="@usuario (IG, X, etc.)"
-                />
-              </div>
-              
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] focus:shadow-[0_0_15px_rgba(0,255,204,0.2)] transition-all outline-none text-white text-sm"
-                  placeholder="correo@ejemplo.com"
-                />
-              </div>
-              
-              <div className="space-y-1.5">
-                <label htmlFor="phone" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                  Número de Contacto
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  required
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] focus:shadow-[0_0_15px_rgba(0,255,204,0.2)] transition-all outline-none text-white text-sm"
-                  placeholder="10 dígitos"
-                />
-              </div>
+            )}
+            {pickedDates.length > 0 && (
+              <p className="text-sm font-bold" aria-live="polite">
+                1ª opción: <span className="first-letter:uppercase">{fmt(pickedDates[0], "EEEE d 'de' MMMM")}</span>
+                {pickedDates[1] && <> · 2ª opción: {fmt(pickedDates[1], "EEEE d 'de' MMMM")}</>}
+              </p>
+            )}
+          </section>
+
+          <section className="space-y-5">
+            <SectionTitle n={3}>Sobre ti</SectionTitle>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field id="speaker_name" label="Nombre completo">
+                <input type="text" id="speaker_name" name="speaker_name" required autoComplete="name" className={inputClass} placeholder="Como quieres que aparezca en el cartel" />
+              </Field>
+              <Field id="social_media" label="Usuario en redes">
+                <input type="text" id="social_media" name="social_media" className={inputClass} placeholder="@usuario (opcional)" />
+              </Field>
+              <Field id="email" label="Correo electrónico">
+                <input type="email" id="email" name="email" required autoComplete="email" className={inputClass} placeholder="tu@correo.com" />
+              </Field>
+              <Field id="phone" label="Teléfono / WhatsApp" hint="10 dígitos">
+                <input type="tel" id="phone" name="phone" required autoComplete="tel" inputMode="numeric" className={inputClass} placeholder="771 000 0000" />
+              </Field>
             </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="speaker_bio" className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                Biografía Breve
-              </label>
-              <textarea
-                id="speaker_bio"
-                name="speaker_bio"
-                required
-                rows={2}
-                className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg focus:ring-1 focus:ring-[#00FFCC] focus:border-[#00FFCC] focus:shadow-[0_0_15px_rgba(0,255,204,0.2)] transition-all outline-none text-white text-sm resize-none"
-                placeholder="Estudiante de biología, apasionado por la divulgación..."
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-[#A0A0A0] uppercase tracking-wider">
-                Foto de Perfil
-              </label>
+            <Field id="speaker_bio" label="Biografía breve">
+              <textarea id="speaker_bio" name="speaker_bio" required rows={3} className={cn(inputClass, "resize-none")} placeholder="Ej. Estudiante de doctorado en biología, me apasiona la divulgación." />
+            </Field>
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wide">Foto para el cartel</p>
               <div className="flex items-center gap-4">
-                <div className="shrink-0">
-                  {photoPreview ? (
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-[#00FFCC] shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-[#0A0A0A] border border-dashed border-[#333333] flex items-center justify-center text-[#A0A0A0]">
-                      <Upload className="w-5 h-5" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <label
-                    htmlFor="photo"
-                    className="inline-flex items-center justify-center px-4 py-2 border border-[#333333] text-white text-sm font-medium rounded-lg hover:bg-[#222222] cursor-pointer transition-colors"
-                  >
-                    Seleccionar Imagen
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Vista previa de tu foto" className="w-20 h-20 rounded-full object-cover border-[4px] border-tinta" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full border-2 border-dashed border-tinta flex items-center justify-center text-gris">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="photo" className="inline-flex items-center min-h-11 px-5 rounded-full border-2 border-tinta font-bold text-sm cursor-pointer hover:bg-tinta hover:text-papel transition-colors">
+                    {photoPreview ? "Cambiar foto" : "Elegir foto"}
                   </label>
-                  <input
-                    type="file"
-                    id="photo"
-                    name="photo"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoChange}
-                  />
-                  <p className="mt-1.5 text-xs text-[#A0A0A0]">
-                    Sube una foto clara para tu perfil (JPG, PNG).
-                  </p>
+                  <input type="file" id="photo" name="photo" accept="image/*" className="sr-only" onChange={handlePhotoChange} />
+                  <p className="mt-1.5 text-xs text-gris">Una foto clara de tu cara, en JPG o PNG. Va en un círculo, como en los carteles.</p>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="pt-6">
-            <input
-              type="text"
-              name="_trap"
-              autoComplete="off"
-              tabIndex={-1}
-              aria-hidden="true"
-              style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-medium text-black bg-[#FFCC00] rounded-full hover:bg-[#E6B800] transition-all shadow-[0_0_15px_rgba(255,204,0,0.3)] hover:shadow-[0_0_25px_rgba(255,204,0,0.5)] disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-              ) : (
-                <>
-                  Enviar Propuesta
-                  <Send className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </div>
+          <input type="text" name="_trap" autoComplete="off" tabIndex={-1} aria-hidden="true" style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0 }} />
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 min-h-14 rounded-full bg-ambar text-tinta text-lg font-bold shadow-sello hover:-translate-y-0.5 transition-transform disabled:opacity-60 disabled:translate-y-0"
+          >
+            {isSubmitting ? (
+              <span className="w-5 h-5 border-2 border-tinta/30 border-t-tinta rounded-full animate-spin" aria-label="Enviando" />
+            ) : (
+              <>
+                Enviar propuesta <Send className="w-5 h-5" />
+              </>
+            )}
+          </button>
         </form>
-      </div>
+      )}
     </div>
   );
 }

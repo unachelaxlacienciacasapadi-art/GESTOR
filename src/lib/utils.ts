@@ -13,6 +13,27 @@ export function parseTalkDate(value: string | null | undefined): Date | null {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+// Fechas sin "Z" + ctz: Google Calendar las toma como hora de CDMX sin importar
+// la zona del navegador (antes se mandaba la hora local marcada como UTC).
+export function googleCalendarUrl(talk: { title: string; scheduled_date?: string | null; description_short?: string | null; abstract?: string | null }): string {
+  const start = parseTalkDate(talk.scheduled_date);
+  if (!start) return "#";
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  const stamp = (d: Date) =>
+    `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: talk.title,
+    dates: `${stamp(start)}/${stamp(end)}`,
+    ctz: "America/Mexico_City",
+    details: talk.description_short || talk.abstract || "",
+    location: "Casa Pädi, Av. Piracantos 1507, Col. Alborada, Pachuca",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 export function startOfToday(): number {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
