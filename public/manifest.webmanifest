@@ -1,0 +1,23 @@
+{
+  "name": "Una chela x la ciencia · Casa Pädi",
+  "short_name": "Chela x Ciencia",
+  "description": "Charlas de divulgación científica con entrada libre, cada miércoles a las 7:00 pm en Casa Pädi, Pachuca.",
+  "lang": "es-MX",
+  "id": "/",
+  "start_url": "/?origen=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3EDE1",
+  "theme_color": "#2E6F40",
+  "categories": ["education", "events", "entertainment"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Cartelera", "short_name": "Cartelera", "url": "/cartelera", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Proponer una charla", "short_name": "Proponer", "url": "/registro", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
