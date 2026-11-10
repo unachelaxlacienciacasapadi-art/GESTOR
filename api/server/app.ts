@@ -105,12 +105,21 @@ app.get("/api/suggestions", async (_req, res) => {
   }
 });
 
-app.post("/api/suggestions", async (req, res) => {
+// Límites por IP para los formularios públicos de comunidad.
+const suggestionLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: { error: "Demasiadas propuestas. Intenta en una hora." } });
+const voteLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 30, message: { error: "Demasiados votos." } });
+const feedbackLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { error: "Demasiadas opiniones." } });
+
+const cleanText = (value: unknown, max: number) =>
+  typeof value === "string" ? value.trim().slice(0, max) : "";
+
+app.post("/api/suggestions", suggestionLimiter, async (req, res) => {
   try {
-    const { topic, description, category } = req.body;
+    const topic = cleanText(req.body?.topic, 120);
+    if (!topic) return res.status(400).json({ error: "El tema es obligatorio" });
     const { rows } = await pool.query(
       "INSERT INTO topic_suggestions (topic, description, category) VALUES ($1, $2, $3) RETURNING id",
-      [topic, description || "", category || "General"]
+      [topic, cleanText(req.body?.description, 400), cleanText(req.body?.category, 40) || "General"]
     );
     res.json({ id: rows[0].id, success: true });
   } catch {
@@ -118,7 +127,8 @@ app.post("/api/suggestions", async (req, res) => {
   }
 });
 
-app.post("/api/suggestions/:id/vote", async (req, res) => {
+app.post("/api/suggestions/:id/vote", voteLimiter, async (req, res) => {
+  if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ error: "Invalid id" });
   try {
     await pool.query(
       "UPDATE topic_suggestions SET votes = votes + 1 WHERE id = $1",
@@ -132,13 +142,21 @@ app.post("/api/suggestions/:id/vote", async (req, res) => {
 
 // ── Feedback de charlas ──────────────────────────────────────────────────────
 
-app.post("/api/talks/:id/feedback", async (req, res) => {
+app.post("/api/talks/:id/feedback", feedbackLimiter, async (req, res) => {
+  const rating = Number(req.body?.rating);
+  if (!/^\d+$/.test(req.params.id) || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: "Calificación inválida" });
+  }
   try {
-    const { rating, comment } = req.body;
-    await pool.query(
-      "INSERT INTO feedback (talk_id, rating, comment) VALUES ($1, $2, $3)",
-      [req.params.id, rating, comment || ""]
+    // Solo se puede opinar sobre charlas públicas que ya ocurrieron.
+    const { rowCount } = await pool.query(
+      `INSERT INTO feedback (talk_id, rating, comment)
+       SELECT id, $2, $3 FROM talks
+       WHERE id = $1 AND status IN ('scheduled', 'completed')
+         AND scheduled_date < now() AT TIME ZONE 'America/Mexico_City'`,
+      [req.params.id, rating, cleanText(req.body?.comment, 1000)]
     );
+    if (!rowCount) return res.status(404).json({ error: "Charla no encontrada" });
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Failed to submit feedback" });
@@ -159,12 +177,18 @@ app.get("/api/talks/:id/feedback", async (req, res) => {
 
 // ── Check-in / pasaporte ─────────────────────────────────────────────────────
 
-app.post("/api/checkin", async (req, res) => {
+// Solo el staff registra asistencias: abierto al público, cualquiera podía
+// sumarse las 5 visitas del Pasaporte para cualquier correo.
+app.post("/api/checkin", authenticateToken, async (req, res) => {
+  const email = cleanText(req.body?.email, 254).toLowerCase();
+  const talkId = Number(req.body?.talk_id);
+  if (!email.includes("@") || !Number.isInteger(talkId)) {
+    return res.status(400).json({ error: "Datos inválidos" });
+  }
   try {
-    const { email, talk_id } = req.body;
     await pool.query(
       "INSERT INTO checkins (user_email, talk_id) VALUES ($1, $2) ON CONFLICT (user_email, talk_id) DO NOTHING",
-      [email, talk_id]
+      [email, talkId]
     );
     res.json({ success: true });
   } catch {

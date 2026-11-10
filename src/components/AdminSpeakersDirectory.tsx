@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Mail, Phone, Instagram, Search, User, Building2, LayoutGrid, List as ListIcon } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn, normalizeText } from "../lib/utils";
 import { Talk } from "../types/talk";
 
 type Props = {
@@ -15,6 +15,7 @@ type SpeakerTalk = {
   status?: string;
   scheduled_date?: string | null;
   created_at?: string;
+  role: "principal" | "co";
 };
 
 type SpeakerEntry = {
@@ -46,15 +47,72 @@ const STATUS_CLASS: Record<string, string> = {
   completed: "bg-[#333333] text-[#A0A0A0] border border-[#444444]",
 };
 
-// Rango Unicode de marcas diacríticas combinantes (acentos), construido con
-// fromCharCode para evitar ambigüedad de escape en el código fuente.
-const DIACRITICS_RANGE = new RegExp(
-  "[" + String.fromCharCode(0x0300) + "-" + String.fromCharCode(0x036f) + "]",
-  "g"
-);
+const normalize = normalizeText;
 
-const normalize = (s: string) =>
-  s.trim().toLowerCase().normalize("NFD").replace(DIACRITICS_RANGE, "");
+type Person = Omit<SpeakerEntry, "key" | "talks">;
+
+const TITLE_PREFIX = /^(?:(?:dra?|mtr[ao]|lic|ing|psc?|psic|prof|biol?|arq)\.?|m\.?\s*en\s*c\.?)\s+/i;
+
+// "Dra. Karina Pizarro" y "Karina Pizarro" son la misma persona.
+const personKey = (name: string) => normalize(name.replace(TITLE_PREFIX, "")).replace(/\s+/g, " ");
+
+// speaker_2_name puede traer varios nombres: "Dra. A y Dra. B".
+const splitNames = (raw: string) =>
+  raw.split(/\s*,\s*|\s+y\s+(?=(?:dra?|mtr[ao])\.\s)/i).map((n) => n.trim()).filter(Boolean);
+
+// Al fusionar charlas duplicadas, el contacto del co-ponente quedó en admin_notes
+// como "Co-ponente: Nombre — email — teléfono (fusionado desde charla #N)".
+const coSpeakerContacts = (notes?: string | null) => {
+  const contacts = new Map<string, { email?: string; phone?: string }>();
+  for (const line of (notes || "").split("\n")) {
+    const m = line.match(/^Co-ponente:\s*(.+?)\s+—\s+(.*?)\s*(?:\(fusionado.*)?$/);
+    if (!m) continue;
+    const parts = m[2].split(/\s+—\s+/);
+    contacts.set(personKey(m[1]), {
+      email: parts.find((p) => p.includes("@")),
+      phone: parts.find((p) => !p.includes("@") && /\d{7,}/.test(p.replace(/\D/g, ""))),
+    });
+  }
+  return contacts;
+};
+
+const peopleInTalk = (talk: Talk): { person: Person; role: "principal" | "co" }[] => {
+  const people: { person: Person; role: "principal" | "co" }[] = [];
+  const main = (talk.speaker_name || "").trim();
+  if (main) {
+    people.push({
+      role: "principal",
+      person: {
+        name: main,
+        photo_url: talk.speaker_photo_url || null,
+        email: talk.email || null,
+        phone: talk.phone || null,
+        social_media: talk.social_media || null,
+        facebook_url: talk.facebook_url || null,
+        institution: talk.institution || null,
+        bio: talk.speaker_bio || null,
+      },
+    });
+  }
+  const coNames = splitNames(talk.speaker_2_name || "");
+  const contacts = coSpeakerContacts(talk.admin_notes);
+  for (const name of coNames) {
+    const contact = contacts.get(personKey(name));
+    people.push({
+      role: "co",
+      person: {
+        name,
+        // Foto y bio de speaker_2 solo son confiables si hay un único co-ponente.
+        photo_url: coNames.length === 1 ? talk.speaker_2_photo_url || null : null,
+        bio: coNames.length === 1 ? talk.speaker_2_bio || null : null,
+        email: contact?.email || null,
+        phone: contact?.phone || null,
+        institution: talk.institution || null,
+      },
+    });
+  }
+  return people;
+};
 
 const formatTalkDate = (t: SpeakerTalk) => {
   const raw = t.scheduled_date || t.created_at;
@@ -118,6 +176,9 @@ const TalksList = ({ talks }: { talks: SpeakerTalk[] }) => (
     {talks.map((t) => (
       <div key={t.id} className="flex items-center justify-between gap-2">
         <span className="text-xs text-white truncate flex-1" title={t.title}>{t.title}</span>
+        {t.role === "co" && (
+          <span className="text-[9px] font-bold uppercase tracking-wider text-[#9933FF] shrink-0">Co-ponente</span>
+        )}
         <span className="text-[10px] text-[#A0A0A0] shrink-0 whitespace-nowrap">{formatTalkDate(t)}</span>
         <StatusPill status={t.status} />
       </div>
@@ -132,50 +193,41 @@ export default function AdminSpeakersDirectory({ talks }: Props) {
   // Los ponentes en talks ya vienen ordenados por created_at DESC desde el backend,
   // así que el primer registro que encontramos para cada clave es el más reciente.
   const speakers = useMemo(() => {
-    const map = new Map<string, SpeakerEntry>();
+    const entries: SpeakerEntry[] = [];
+    const byEmail = new Map<string, SpeakerEntry>();
+    const byName = new Map<string, SpeakerEntry>();
 
     for (const talk of talks) {
-      const name = (talk.speaker_name || "").trim();
-      if (!name) continue;
+      for (const { person, role } of peopleInTalk(talk)) {
+        const email = (person.email || "").trim().toLowerCase();
+        const nameKey = personKey(person.name);
+        let entry = (email && byEmail.get(email)) || byName.get(nameKey);
 
-      const email = (talk.email || "").trim().toLowerCase();
-      const key = email || name.toLowerCase();
+        if (!entry) {
+          entry = { ...person, key: nameKey, talks: [] };
+          entries.push(entry);
+        } else {
+          for (const field of ["photo_url", "email", "phone", "social_media", "facebook_url", "institution", "bio"] as const) {
+            entry[field] = entry[field] || person[field] || null;
+          }
+        }
+        if (email) byEmail.set(email, entry);
+        byName.set(nameKey, entry);
 
-      let entry = map.get(key);
-      if (!entry) {
-        entry = {
-          key,
-          name,
-          photo_url: talk.speaker_photo_url || null,
-          email: talk.email || null,
-          phone: talk.phone || null,
-          social_media: talk.social_media || null,
-          facebook_url: talk.facebook_url || null,
-          institution: talk.institution || null,
-          bio: talk.speaker_bio || null,
-          talks: [],
-        };
-        map.set(key, entry);
-      } else {
-        entry.photo_url = entry.photo_url || talk.speaker_photo_url || null;
-        entry.email = entry.email || talk.email || null;
-        entry.phone = entry.phone || talk.phone || null;
-        entry.social_media = entry.social_media || talk.social_media || null;
-        entry.facebook_url = entry.facebook_url || talk.facebook_url || null;
-        entry.institution = entry.institution || talk.institution || null;
-        entry.bio = entry.bio || talk.speaker_bio || null;
+        if (!entry.talks.some((t) => t.id === talk.id)) {
+          entry.talks.push({
+            id: talk.id,
+            title: talk.title,
+            status: talk.status,
+            scheduled_date: talk.scheduled_date,
+            created_at: talk.created_at,
+            role,
+          });
+        }
       }
-
-      entry.talks.push({
-        id: talk.id,
-        title: talk.title,
-        status: talk.status,
-        scheduled_date: talk.scheduled_date,
-        created_at: talk.created_at,
-      });
     }
 
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, "es"));
+    return entries.sort((a, b) => personKey(a.name).localeCompare(personKey(b.name), "es"));
   }, [talks]);
 
   const filtered = useMemo(() => {
