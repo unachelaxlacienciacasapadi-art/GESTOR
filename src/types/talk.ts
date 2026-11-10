@@ -13,7 +13,7 @@ export interface Talk {
   transmission_url?: string | null;
   category?: string;
   promo_email_sent?: number;
-  status?: "pending" | "approved" | "rejected" | "scheduled" | "completed";
+  status?: "pending" | "approved" | "rejected" | "scheduled" | "completed" | "cancelled";
   scheduled_date?: string | null;
   summary?: string | null;
   event_photos?: string | null;

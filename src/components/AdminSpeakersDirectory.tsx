@@ -37,6 +37,7 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: "Rechazada",
   scheduled: "Agendada",
   completed: "Completada",
+  cancelled: "Cancelada",
 };
 
 const STATUS_CLASS: Record<string, string> = {
@@ -45,6 +46,7 @@ const STATUS_CLASS: Record<string, string> = {
   rejected: "bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/30",
   scheduled: "bg-[#9933FF]/20 text-[#9933FF] border border-[#9933FF]/30",
   completed: "bg-[#333333] text-[#A0A0A0] border border-[#444444]",
+  cancelled: "bg-[#FF8A33]/15 text-[#FF8A33] border border-[#FF8A33]/30",
 };
 
 const normalize = normalizeText;

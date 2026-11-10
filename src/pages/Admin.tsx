@@ -667,79 +667,61 @@ export default function Admin() {
     }
   };
 
-  const updateStatus = async (id: number, status: Talk["status"], scheduled_date?: string) => {
+  // Devuelve true solo si el servidor confirmó el cambio. Antes los errores se
+  // ignoraban: el modal se cerraba como si se hubiera guardado aunque no fuera así.
+  const adminRequest = async (url: string, method: string, body: unknown, action: string): Promise<boolean> => {
     try {
-      const body: any = { status };
-      if (scheduled_date) body.scheduled_date = scheduled_date;
-
-      const res = await fetch(`/api/talks/${id}`, {
-        method: "PATCH",
+      const res = await fetch(url, {
+        method,
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+          ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
         },
-        body: JSON.stringify(body),
+        body: body !== undefined ? JSON.stringify(body) : undefined,
       });
-      if (res.status === 401 || res.status === 403) return handleLogout();
-      fetchTalks();
-      if (selectedTalk?.id === id) {
-        setSelectedTalk({ ...selectedTalk, status, scheduled_date: scheduled_date || null });
+      if (res.status === 401 || res.status === 403) {
+        alert("Tu sesión expiró. Inicia sesión de nuevo; el cambio no se guardó.");
+        handleLogout();
+        return false;
       }
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(`No se pudo ${action}: ${data?.error || `error ${res.status}`}`);
+        return false;
+      }
+      await fetchTalks();
+      return true;
     } catch (error) {
-      console.error("Failed to update status", error);
+      console.error(`Failed to ${action}`, error);
+      alert(`No se pudo ${action}: revisa tu conexión.`);
+      return false;
     }
+  };
+
+  const updateStatus = async (id: number, status: Talk["status"], scheduled_date?: string) => {
+    const body: Partial<Talk> = { status };
+    if (scheduled_date) body.scheduled_date = scheduled_date;
+    const ok = await adminRequest(`/api/talks/${id}`, "PATCH", body, "cambiar el estado de la charla");
+    if (ok && selectedTalk?.id === id) {
+      setSelectedTalk({ ...selectedTalk, status, scheduled_date: scheduled_date || selectedTalk.scheduled_date });
+    }
+    return ok;
   };
 
   const updateTalk = async (id: number, updates: Partial<Talk>) => {
-    try {
-      const res = await fetch(`/api/talks/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
-        },
-        body: JSON.stringify(updates),
-      });
-      if (res.status === 401 || res.status === 403) return handleLogout();
-      fetchTalks();
-      if (selectedTalk?.id === id) {
-        setSelectedTalk({ ...selectedTalk, ...updates });
-      }
-    } catch (error) {
-      console.error("Failed to update talk", error);
-    }
+    const ok = await adminRequest(`/api/talks/${id}`, "PATCH", updates, "guardar los cambios");
+    if (ok && selectedTalk?.id === id) setSelectedTalk({ ...selectedTalk, ...updates });
+    return ok;
   };
 
   const deleteTalk = async (id: number) => {
-    try {
-      const res = await fetch(`/api/talks/${id}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${localStorage.getItem("adminToken")}` }
-      });
-      if (res.status === 401 || res.status === 403) return handleLogout();
-      fetchTalks();
-      if (selectedTalk?.id === id) setSelectedTalk(null);
-    } catch (error) {
-      console.error("Failed to delete talk", error);
-    }
+    const ok = await adminRequest(`/api/talks/${id}`, "DELETE", undefined, "eliminar la charla");
+    if (ok && selectedTalk?.id === id) setSelectedTalk(null);
+    return ok;
   };
 
-  const createTalk = async (talkData: Partial<Talk>) => {
-    try {
-      const res = await fetch(`/api/admin/talks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
-        },
-        body: JSON.stringify(talkData),
-      });
-      if (res.status === 401 || res.status === 403) return handleLogout();
-      fetchTalks();
-    } catch (error) {
-      console.error("Failed to create talk", error);
-    }
-  };
+  const createTalk = (talkData: Partial<Talk>) =>
+    adminRequest("/api/admin/talks", "POST", talkData, "crear la charla");
 
   // Filter talks based on active tab
   const filteredTalks = talks.filter(talk => {
@@ -1090,7 +1072,7 @@ export default function Admin() {
                       onChange={(e) => setListFilter(e.target.value as any)}
                       className="w-full bg-[#141414] border border-[#333333] text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-[#00FFCC] appearance-none cursor-pointer"
                     >
-                      <option value="pending">Pendientes / Rechazadas</option>
+                      <option value="pending">Pendientes / Rechazadas / Canceladas</option>
                       <option value="approved">Aprobadas / Agendadas</option>
                       <option value="completed">Completadas</option>
                       <option value="all">Todas</option>
@@ -1102,7 +1084,7 @@ export default function Admin() {
                     .filter(talk => {
                       if (activeTab !== "list") return true;
                       if (listFilter === "all") return true;
-                      if (listFilter === "pending") return talk.status === "pending" || talk.status === "rejected";
+                      if (listFilter === "pending") return talk.status === "pending" || talk.status === "rejected" || talk.status === "cancelled";
                       if (listFilter === "approved") return talk.status === "approved" || talk.status === "scheduled";
                       if (listFilter === "completed") return talk.status === "completed";
                       return true;
@@ -1140,12 +1122,14 @@ export default function Admin() {
                           talk.status === "approved" && "bg-[#00FFCC]/20 text-[#00FFCC] border border-[#00FFCC]/30",
                           talk.status === "rejected" && "bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/30",
                           talk.status === "scheduled" && "bg-[#9933FF]/20 text-[#9933FF] border border-[#9933FF]/30",
-                          talk.status === "completed" && "bg-[#333333] text-[#A0A0A0] border border-[#444444]"
+                          talk.status === "completed" && "bg-[#333333] text-[#A0A0A0] border border-[#444444]",
+                          talk.status === "cancelled" && "bg-[#FF8A33]/15 text-[#FF8A33] border border-[#FF8A33]/30 line-through"
                         )}>
                           {talk.status === "pending" ? "Pendiente" :
                             talk.status === "approved" ? "Aprobada" :
                               talk.status === "rejected" ? "Rechazada" :
-                                talk.status === "scheduled" ? "Agendada" : "Completada"}
+                                talk.status === "scheduled" ? "Agendada" :
+                                  talk.status === "cancelled" ? "Cancelada" : "Completada"}
                         </span>
                         <span className="text-[10px] text-[#A0A0A0] flex items-center gap-2">
                           <span className="font-mono text-[#00FFCC]">#{String(talk.id).padStart(4, '0')}</span>

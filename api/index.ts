@@ -623,6 +623,12 @@ app.post("/api/admin/talks", authenticateToken, async (req, res) => {
     if (!updates.title || String(updates.title).trim() === "") {
       return res.status(400).json({ error: "El título es obligatorio" });
     }
+
+    // abstract, speaker_name y speaker_bio son NOT NULL en la tabla y el alta
+    // manual desde la Agenda no siempre los trae: sin esto el INSERT fallaba.
+    if (!updates.speaker_name || String(updates.speaker_name).trim() === "") updates.speaker_name = "Por confirmar";
+    if (updates.abstract == null) updates.abstract = "";
+    if (updates.speaker_bio == null) updates.speaker_bio = "";
     const keys = Object.keys(updates);
     const cols = keys.join(", ");
     const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");

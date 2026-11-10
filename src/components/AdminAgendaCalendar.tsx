@@ -7,10 +7,10 @@ import { Talk } from "../types/talk";
 
 type Props = {
   talks: Talk[];
-  updateTalk: (id: number, updates: Partial<Talk>) => Promise<void>;
-  updateStatus: (id: number, status: string, scheduled_date?: string) => Promise<void>;
-  deleteTalk: (id: number) => Promise<void>;
-  createTalk: (talk: Partial<Talk>) => Promise<void>;
+  updateTalk: (id: number, updates: Partial<Talk>) => Promise<boolean>;
+  updateStatus: (id: number, status: Talk["status"], scheduled_date?: string) => Promise<boolean>;
+  deleteTalk: (id: number) => Promise<boolean>;
+  createTalk: (talk: Partial<Talk>) => Promise<boolean>;
 };
 
 export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, deleteTalk, createTalk }: Props) {
@@ -131,8 +131,17 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
 
   const handleDelete = async (id: number) => {
     if (window.confirm("¿Seguro que deseas eliminar esta charla de la agenda y de la base de datos?")) {
-      await deleteTalk(id);
+      if (await deleteTalk(id)) setShowEditModal(false);
+    }
+  };
+
+  // Cancelar conserva la charla y los datos de la ponente, pero la quita de la
+  // cartelera y libera la fecha para agendar otra.
+  const handleCancelTalk = async (talk: Talk) => {
+    if (!window.confirm(`¿Cancelar "${talk.title}"? Se quitará de la cartelera y el día quedará libre para otra charla.`)) return;
+    if (await updateStatus(talk.id, "cancelled")) {
       setShowEditModal(false);
+      setEditingTalk(null);
     }
   };
 
@@ -143,18 +152,19 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     // YYYY-MM-DDTHH:MM formatting for the backend
     const isoDate = format(selectedDate, "yyyy-MM-dd") + "T" + timeInput;
 
+    let ok = false;
     if (selectedPendingTalk === "NEW") {
-      await createTalk({
+      ok = await createTalk({
         title: newTalkTitle || "Espacio Disponible",
         speaker_name: newTalkSpeaker || "Por Confirmar",
         status: "scheduled",
         scheduled_date: isoDate
       });
     } else if (selectedPendingTalk) {
-      await updateStatus(Number(selectedPendingTalk), "scheduled", isoDate);
+      ok = await updateStatus(Number(selectedPendingTalk), "scheduled", isoDate);
     }
-    
-    setShowAssignModal(false);
+
+    if (ok) setShowAssignModal(false);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -186,11 +196,13 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
     }
     
     setIsSavingEdit(true);
-    await updateTalk(editingTalk.id, updates);
+    const ok = await updateTalk(editingTalk.id, updates);
     setIsSavingEdit(false);
 
-    setShowEditModal(false);
-    setEditingTalk(null);
+    if (ok) {
+      setShowEditModal(false);
+      setEditingTalk(null);
+    }
   };
 
   // Extract pending/approved talks for the dropdown
@@ -539,7 +551,7 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
               )}
 
               {/* Footer */}
-              <div className="pt-4 border-t border-[#333333] flex justify-between items-center">
+              <div className="pt-4 border-t border-[#333333] flex flex-wrap gap-3 items-center">
                 <button
                   type="button"
                   onClick={() => handleDelete(editingTalk.id)}
@@ -547,8 +559,17 @@ export default function AdminAgendaCalendar({ talks, updateTalk, updateStatus, d
                 >
                   <Trash2 className="w-4 h-4" /> Eliminar
                 </button>
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cancelar</button>
+                {editingTalk.status === "scheduled" && (
+                  <button
+                    type="button"
+                    onClick={() => handleCancelTalk(editingTalk)}
+                    className="px-4 py-2 flex items-center gap-2 text-sm font-bold text-[#FFCC00] bg-[#FFCC00]/10 hover:bg-[#FFCC00]/20 rounded-xl transition-colors"
+                  >
+                    <X className="w-4 h-4" /> Cancelar charla
+                  </button>
+                )}
+                <div className="flex gap-3 ml-auto">
+                  <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2 text-sm font-bold text-[#A0A0A0] hover:text-white">Cerrar</button>
                   <button
                     type="button"
                     onClick={handleEditSubmit as any}
