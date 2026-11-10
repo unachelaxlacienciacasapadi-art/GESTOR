@@ -169,7 +169,12 @@ const subscriberSchema = z.object({
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
-const JWT_SECRET = process.env.JWT_SECRET || "casapadi-super-secret-key-2026-xyz";
+// Sin valor por defecto: el repo es público, así que un fallback permitiría
+// falsificar tokens. Si falta, el login responde 503 y todo token se rechaza.
+const JWT_SECRET = process.env.JWT_SECRET ?? "";
+if (!JWT_SECRET) {
+  console.error("JWT_SECRET no está definido: el panel de administración queda deshabilitado.");
+}
 
 const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers["authorization"];
@@ -260,10 +265,20 @@ app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
 // ── Admin login ───────────────────────────────────────────────────────────────
 
-app.post("/api/admin/login", (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, error: "Demasiados intentos. Espera 15 minutos." },
+});
+
+app.post("/api/admin/login", loginLimiter, (req, res) => {
   const { username, password } = req.body;
   const adminUser = process.env.ADMIN_USERNAME || "admin";
-  const adminPass = process.env.ADMIN_PASSWORD || "casapadi2024";
+  const adminPass = process.env.ADMIN_PASSWORD;
+  if (!adminPass || !JWT_SECRET) {
+    console.error("ADMIN_PASSWORD o JWT_SECRET no están definidos.");
+    return res.status(503).json({ success: false, error: "Panel no configurado en el servidor." });
+  }
   if (username === adminUser && password === adminPass) {
     const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: "24h" });
     res.json({ success: true, token });

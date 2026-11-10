@@ -2,10 +2,13 @@ import "./env";
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// Secreto para firmar/verificar los JWT del panel admin.
-// Se lee de process.env.JWT_SECRET (cargado por ./env). El fallback solo aplica
-// en entornos sin configurar; en producción SIEMPRE debe definirse en .env.
-export const JWT_SECRET = process.env.JWT_SECRET || "casapadi-super-secret-key-2026-xyz";
+// Secreto para firmar/verificar los JWT del panel admin. Sin valor por defecto:
+// el repo es público, así que cualquier fallback permitiría falsificar tokens.
+// Si falta, el login responde 503 y todo token se rechaza.
+export const JWT_SECRET = process.env.JWT_SECRET ?? "";
+if (!JWT_SECRET) {
+  console.error("JWT_SECRET no está definido: el panel de administración queda deshabilitado.");
+}
 
 // Middleware que protege las rutas de administración.
 // Espera un header `Authorization: Bearer <token>` y verifica la firma.
